@@ -36,7 +36,7 @@ export default function Portal() {
         </button>
 
         <button
-          onClick={() => router.push("/menu-board")}
+          onClick={() => router.push("/menu_board")}
           className="bg-white p-3 rounded shadow hover:bg-gray-100 transition"
         >
           Menu Board
