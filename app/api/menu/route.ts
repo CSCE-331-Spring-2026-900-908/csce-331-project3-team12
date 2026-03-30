@@ -8,9 +8,7 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
   port: Number(process.env.DB_PORT),
-  ssl: {
-    rejectUnauthorized: false, // some managed DBs require this
-  },
+  ssl: { rejectUnauthorized: false },
 });
 
 export async function GET() {
