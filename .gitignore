@@ -2,6 +2,9 @@
 build/
 dist/
 
+# dependencies
+node_modules/
+
 # environment variables
 .env
 .env.local
@@ -24,6 +27,7 @@ yarn-error.log*
 
 # next.js
 .next/
+.vercel/
 
 # macOS
 .DS_Store
