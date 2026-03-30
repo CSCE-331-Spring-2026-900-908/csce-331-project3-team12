@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boba Shop TV Menu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* Landscape TV constraint (16:9 ratio) */
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #F8F5F0; /* Warm paper-like background */
+            /* Subtle texture gradient */
+            background-image: radial-gradient(#ebe5dc 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #1a1a1a;
+            font-family: 'Jost', sans-serif;
+            display: flex;
+            flex-direction: column;
+            padding: 3vh 4vw;
+        }
+
+        /* Header Section */
+        header {
+            text-align: center;
+            margin-bottom: 4vh;
+        }
+
+        h1 {
+            font-family: 'Jost', sans-serif;
+            font-size: 3.5vh;
+            font-weight: 600;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            margin-bottom: 0.5vh;
+        }
+
+        /* Menu Grid Layout */
+        .menu-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4vw;
+            flex-grow: 1;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 3vh;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 1vh;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 2px solid #333;
+            padding-bottom: 0.5vh;
+            margin-bottom: 2vh;
+        }
+
+        .category-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 5vh;
+            font-weight: 700;
+        }
+
+        /* Individual Menu Item Styling */
+        .menu-item {
+            display: flex;
+            align-items: baseline;
+            font-size: 2.2vh;
+            font-weight: 500;
+            margin-bottom: 1.2vh;
+        }
+
+        .item-name {
+            white-space: nowrap;
+        }
+
+        /* Dotted line connecting name to price */
+        .dots {
+            flex-grow: 1;
+            border-bottom: 3px dotted #b3b3b3;
+            margin: 0 1vw;
+            position: relative;
+            top: -4px;
+        }
+
+        .item-price {
+            font-weight: 600;
+        }
+
+        /* Footer / Add-ons section to match the image's layout */
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2vh;
+            border-top: 1px dashed #ccc;
+            padding-top: 2vh;
+            font-size: 1.8vh;
+        }
+        
+        .footer-group {
+            flex: 1;
+        }
+
+        .footer-group:nth-child(2) {
+            flex: 2.5;
+        }
+
+        .footer-group:nth-child(3) {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .footer-group h4 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3vh;
+            margin-bottom: 1vh;
+        }
+
+        .footer-group:nth-child(1) h4 {
+            white-space: nowrap;
+        }
+
+        .footer-group:nth-child(2) h4 {
+            margin-left: 5vw;
+        }
+
+        .footer-group:nth-child(2) p {
+            margin-left: 2vw;
+        }
+
+        .footer-group:nth-child(1) p {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2vw;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Boba Tea Menu</h1>
+    </header>
+
+    <main class="menu-container">
+        <div class="column">
+            <div class="category">
+                <div class="category-header">
+                    <h2 class="category-title">Milk Tea</h2>
+                </div>
+                <div class="menu-item"><span class="item-name"></span><span class="dots"></span><span class="item-price">Small &nbsp; Regular &nbsp; Large</span></div>
+                <div class="menu-item"><span class="item-name">Green Milk Tea</span><span class="dots"></span><span class="item-price">$5.09 &nbsp; $5.65 &nbsp; $6.22</span></div>
+                <div class="menu-item"><span class="item-name">Black Milk Tea</span><span class="dots"></span><span class="item-price">$5.09 &nbsp; $5.65 &nbsp; $6.22</span></div>
+                <div class="menu-item"><span class="item-name">Oolong Milk Tea</span><span class="dots"></span><span class="item-price">$5.09 &nbsp; $5.65 &nbsp; $6.22</span></div>
+                <div class="menu-item"><span class="item-name">Earl Grey Milk Tea</span><span class="dots"></span><span class="item-price">$5.09 &nbsp; $5.65 &nbsp; $6.22</span></div>
+                <div class="menu-item"><span class="item-name">Pearl Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Caramel Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Brown Sugar Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Wintermelon Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Strawberry Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Taro Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Coffee Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Thai Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Test Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="category">
+                <div class="category-header">
+                    <h2 class="category-title">Fruit Tea</h2>
+                </div>
+                <div class="menu-item"><span class="item-name"></span><span class="dots"></span><span class="item-price">Small &nbsp; Regular &nbsp; Large</span></div>
+                <div class="menu-item"><span class="item-name">Mango Green Tea</span><span class="dots"></span><span class="item-price">$5.22 &nbsp; $5.80 &nbsp; $6.38</span></div>
+                <div class="menu-item"><span class="item-name">Passion Fruit Green Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Peach Oolong</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+                <div class="menu-item"><span class="item-name">Mango & Passion Fruit Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
+            </div>
+
+            <div class="category">
+                <div class="category-header">
+                    <h2 class="category-title">Matcha</h2>
+                </div>
+                <div class="menu-item"><span class="item-name"></span><span class="dots"></span><span class="item-price">Small &nbsp; Regular &nbsp; Large</span></div>
+                <div class="menu-item"><span class="item-name">Matcha Milk Tea</span><span class="dots"></span><span class="item-price">$5.85 &nbsp; $6.50 &nbsp; $7.15</span></div>
+                <div class="menu-item"><span class="item-name">Strawberry Matcha</span><span class="dots"></span><span class="item-price">$5.85 &nbsp; $6.50 &nbsp; $7.15</span></div>
+                <div class="menu-item"><span class="item-name">Mango Matcha</span><span class="dots"></span><span class="item-price">$5.85 &nbsp; $6.50 &nbsp; $7.15</span></div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="category">
+                <div class="category-header">
+                    <h2 class="category-title">Slush</h2>
+                </div>
+                <div class="menu-item"><span class="item-name"></span><span class="dots"></span><span class="item-price">Small &nbsp; Regular &nbsp; Large</span></div>
+                <div class="menu-item"><span class="item-name">Oreo Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
+                <div class="menu-item"><span class="item-name">Taro Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
+                <div class="menu-item"><span class="item-name">Coffee Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
+                <div class="menu-item"><span class="item-name">Strawberry Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
+                <div class="menu-item"><span class="item-name">Mango Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
+            </div>
+
+            <div class="category">
+                <div class="category-header">
+                    <h2 class="category-title">Seasonal</h2>
+                </div>
+                <div class="menu-item"><span class="item-name"></span><span class="dots"></span><span class="item-price">Small &nbsp; Regular &nbsp; Large</span></div>
+                <div class="menu-item"><span class="item-name">Seasonal Latte</span><span class="dots"></span><span class="item-price">$5.40 &nbsp; $6.00 &nbsp; $6.60</span></div>
+            </div>
+            
+            <div class="footer-info">
+                <div class="footer-group">
+                    <h4>Sugar Level</h4>
+                    <p>0% 25%</p>
+                    <p>50% 75%</p>
+                    <p>100% 125%</p>
+                </div>
+                <div class="footer-group">
+                    <h4>Toppings</h4>
+                    <p>Oreo Crumbs &nbsp; &nbsp; &nbsp; &nbsp;Tapioca Pearls</p>
+                    <p>Pudding &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;Strawberry Popping </p>
+                    <p>Mango Popping &nbsp; &nbsp; &nbsp; Grass Jelley</p>
+                    <p>Cheese Foam &nbsp; &nbsp; &nbsp; &nbsp; Lychee Jelly </p>
+                </div>
+                <div class="footer-group">
+                    <h4>Ice Level</h4>
+                    <p>No Ice</p>
+                    <p>Less Ice</p>
+                    <p>Regular</p> 
+                    <p>Extra Ice</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
