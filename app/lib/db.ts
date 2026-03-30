@@ -1,4 +1,9 @@
-import { Pool } from "pg";
+import pkg from "pg";
+
+const { Pool } = pkg;
+
+// Check if SSL should be used
+const useSSL = process.env.DB_SSL === "true";
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -6,9 +11,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
   port: Number(process.env.DB_PORT),
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: useSSL
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 export default pool;

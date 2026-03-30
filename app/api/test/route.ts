@@ -6,7 +6,11 @@ export async function GET() {
     const result = await pool.query("SELECT NOW()");
     return NextResponse.json(result.rows);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "DB error" }, { status: 500 });
+    console.error("DB ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Database error" },
+      { status: 500 }
+    );
   }
 }
