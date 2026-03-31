@@ -25,7 +25,7 @@ export default function MenuBoard() {
         Back to Portal
       </Link>
       <iframe
-        src="/bobba_shop_menu.html"
+        src="/boba-shop-menu/bobba_shop_menu.html"
         style={{
           width: "100%",
           height: "100%",

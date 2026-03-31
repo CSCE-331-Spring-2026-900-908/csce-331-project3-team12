@@ -57,6 +57,7 @@
             display: flex;
             flex-direction: column;
             gap: 3vh;
+            position: relative;
         }
 
         /* Category Styling */
@@ -151,6 +152,113 @@
             grid-template-columns: 1fr 1fr;
             gap: 2vw;
         }
+
+        /* Fruit drink image positioning */
+        .fruit-drink-img {
+            position: absolute;         /* Remove from document flow */
+            top: 72%;                   /* Position vertically (adjust 0-100%) */
+            left: 60%;
+            transform: translateX(-50%); /* Center horizontally */
+            max-width: 400px;           /* Change to adjust width */
+            height: auto;               /* Keep auto for aspect ratio */
+            opacity: 0.9;              /* Lower opacity to blend behind text */
+            pointer-events: none;       /* Allow clicks to pass through */
+            z-index: 0;                 /* Behind text */
+        }
+
+        /* Drink label text positioning */
+        .drink-label {
+            position: absolute;
+            top: 80%;                   /* Adjust vertical position */
+            left: 80%;
+            transform: translateX(-50%);
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5vh;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            z-index: 1;                 /* On top of image */
+            pointer-events: none;
+        }
+
+        /* Matcha image - right corner */
+        .matcha-img {
+            position: absolute;
+            top: 85%;
+            right: 60%;                  /* Right corner */
+            transform: translateY(-50%);
+            max-width: 400px;
+            height: auto;
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .matcha-label {
+            position: absolute;
+            top: 85%;
+            right: 55%;
+            font-family: 'Dancing Script', cursive;
+            font-size: 3vh;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Milktea image - left corner */
+        .milktea-img {
+            position: absolute;
+            top: -3%;
+            left: 5%;                   /* Left corner */
+            transform: translateY(-50%);
+            max-width: 380px;
+            height: auto;
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .milktea-label {
+            position: absolute;
+            top: -3%;
+            left: 50%;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.8vh;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            z-index: 1;
+            pointer-events: none;
+            max-width: 200px;
+        }
+
+        /* Slush image - left corner */
+        .slush-img {
+            position: absolute;
+            top: -5%;
+            left: 5%;                   /* Left corner */
+            transform: translateY(-50%);
+            max-width: 300px;
+            height: auto;
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .slush-label {
+            position: absolute;
+            top: -5%;
+            left: 45%;
+            font-family: 'Dancing Script', cursive;
+            font-size: 3vh;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            z-index: 1;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +288,9 @@
                 <div class="menu-item"><span class="item-name">Thai Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
                 <div class="menu-item"><span class="item-name">Test Milk Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
             </div>
+
+            <img src="./boba-images/transparent-milktea.png" alt="Brown Sugar Pearl Milk Tea" class="milktea-img">
+            <div class="milktea-label">Brown Sugar Pearl Milk Tea</div>
         </div>
 
         <div class="column">
@@ -194,6 +305,9 @@
                 <div class="menu-item"><span class="item-name">Mango & Passion Fruit Tea</span><span class="dots"></span><span class="item-price">$5.63 &nbsp; $6.25 &nbsp; $6.88</span></div>
             </div>
 
+            <img src="./boba-images/transparent-fruit_drink.png" alt="Fruit Tea Drink" class="fruit-drink-img">
+            <div class="drink-label">Passion Fruit Green Tea</div>
+
             <div class="category">
                 <div class="category-header">
                     <h2 class="category-title">Matcha</h2>
@@ -203,6 +317,9 @@
                 <div class="menu-item"><span class="item-name">Strawberry Matcha</span><span class="dots"></span><span class="item-price">$5.85 &nbsp; $6.50 &nbsp; $7.15</span></div>
                 <div class="menu-item"><span class="item-name">Mango Matcha</span><span class="dots"></span><span class="item-price">$5.85 &nbsp; $6.50 &nbsp; $7.15</span></div>
             </div>
+
+            <img src="./boba-images/transparent-matcha.png" alt="Matcha Milk Tea" class="matcha-img">
+            <div class="matcha-label">Matcha Milk Tea</div>
         </div>
 
         <div class="column">
@@ -217,6 +334,9 @@
                 <div class="menu-item"><span class="item-name">Strawberry Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
                 <div class="menu-item"><span class="item-name">Mango Slush</span><span class="dots"></span><span class="item-price">$6.08 &nbsp; $6.75 &nbsp; $7.43</span></div>
             </div>
+
+            <img src="./boba-images/transparent-slush.png" alt="Mango Slush" class="slush-img">
+            <div class="slush-label">Mango Slush</div>
 
             <div class="category">
                 <div class="category-header">
