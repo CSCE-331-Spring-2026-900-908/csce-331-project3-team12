@@ -1,0 +1,63 @@
+SCRUM Meeting 4 for Project 3 Team 12
+Prepared by: Ruth
+Meeting Date: 4/1/26
+Meeting Attendees
+ Ruth
+Vasisht
+Andy
+ Chris
+ Daniel
+ Caleb
+Meeting Agenda Items
+ Issues
+Issues scheduling again
+Difficulty with connecting to database when deploying
+A lot of a variety of requirements making the project more complex
+Work Completed
+See below
+Work to do:
+See below
+Tasks Assigned
+See below
+Status Update Since Last Meeting
+Accomplishments:
+Completed design of menu board
+Completed design of customer board
+Finished implementation of menu board
+
+Tasks Completed:
+Task Description
+Assigned to
+Completed? (yes/no)
+Menu board design
+Daniel
+yes
+Implementation of menu board
+Daniel
+yes
+Customer kiosk design
+Andy
+yes
+
+Before The Next Meeting
+Plans:
+Complete design of kitchen display
+Partially complete manager dashboard
+Implement customizations page to cashier interface
+
+Task Assignments:
+Task Description
+Assigned to
+Complete design of kitchen display
+Chris
+Work on manager dashboard
+Vasisht
+Work on implementation of customer interface
+Andy
+Implement customizations page to cashier interface
+Caleb
+Maintain meeting minutes & issues
+Ruth
+
+Minutes from Previous Meeting
+In our previous meeting, we discussed the completion of our cashier interface and its connection to the database. We then talked about issues that we encountered with connecting the database to the frontend and how to minimize those issues. We then assigned roles for the next week at that meeting and scheduled our next meetings for sprint 2 in order to ensure we have checkpoints of when to complete work.
