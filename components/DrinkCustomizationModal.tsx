@@ -32,12 +32,12 @@ export default function DrinkCustomizationModal({
 
   useEffect(() => {
     // fetch toppings from API
-    fetch("/api/menu")
+    fetch("/api/toppings")
       .then((res) => res.json())
-      .then((data: { name: string; price: number }[]) => {
-        // only include toppings (filter by name or type if needed)
-        setAvailableToppings(data.map((d) => d.name));
-      })
+      .then((data: { ingredientname: string }[]) => {
+  const names = data.map((d) => d.ingredientname);
+  setAvailableToppings(names);
+})
       .catch(() => setAvailableToppings(["Boba Pearls", "Grass Jelly", "Pudding"]));
   }, []);
 
@@ -126,9 +126,9 @@ export default function DrinkCustomizationModal({
         <div className="mb-4">
           <h3 className="font-semibold mb-2">Toppings (max 2)</h3>
           <div className="flex gap-2 flex-wrap">
-            {availableToppings.map((t) => (
-              <button
-                key={t}
+           {availableToppings.map((t, i) => (
+  <button
+    key={`${t}-${i}`}
                 onClick={() => toggleTopping(t)}
                 disabled={!toppings.includes(t) && toppings.length >= 2}
                 className={`px-4 py-2 rounded ${
