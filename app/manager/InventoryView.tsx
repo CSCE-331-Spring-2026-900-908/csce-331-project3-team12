@@ -29,6 +29,7 @@ export default function InventoryView() {
   const [fetchError, setFetchError] = useState('');
   const [mode, setMode]           = useState<Mode>('current');
   const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [hoveredName, setHoveredName]   = useState<string | null>(null);
   const [nameField, setNameField] = useState('');
   const [typeField, setTypeField] = useState('');
   const [qtyField,  setQtyField]  = useState('');
@@ -179,9 +180,11 @@ export default function InventoryView() {
                   <tr
                     key={item.name}
                     onClick={() => selectItem(item)}
+                    onMouseEnter={() => setHoveredName(item.name)}
+                    onMouseLeave={() => setHoveredName(null)}
                     style={{
                       borderBottom: `1px solid ${BORDER}`,
-                      background: selectedName === item.name ? '#DBEAFE' : '#fff',
+                      background: selectedName === item.name ? '#DBEAFE' : hoveredName === item.name ? '#F3F4F6' : '#fff',
                       cursor: 'pointer',
                       height: 26,
                     }}

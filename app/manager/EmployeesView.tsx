@@ -18,6 +18,7 @@ export default function EmployeesView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading]     = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId]   = useState<number | null>(null);
   const [name,     setName]     = useState('');
   const [hourly,   setHourly]   = useState('');
   const [position, setPosition] = useState('');
@@ -116,9 +117,11 @@ export default function EmployeesView() {
                 <tr
                   key={emp.employeeid}
                   onClick={() => select(emp)}
+                  onMouseEnter={() => setHoveredId(emp.employeeid)}
+                  onMouseLeave={() => setHoveredId(null)}
                   style={{
                     borderBottom: `1px solid ${BORDER}`,
-                    background: selectedId === emp.employeeid ? '#DBEAFE' : '#fff',
+                    background: selectedId === emp.employeeid ? '#DBEAFE' : hoveredId === emp.employeeid ? '#F3F4F6' : '#fff',
                     cursor: 'pointer',
                     height: 26,
                   }}
