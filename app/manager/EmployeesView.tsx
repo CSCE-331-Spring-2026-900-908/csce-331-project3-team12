@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-const ACCENT = '#FFDC78';
+const ACCENT = '#EDE9FE';
 const BORDER = '#E5E7EB';
 const GRAY   = '#6B7280';
 

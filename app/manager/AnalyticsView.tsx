@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 const TEXT   = '#1F2933';
 const BORDER = '#E5E7EB';
 const PURPLE = '#7B3FF2';
+const PURPLE_XL = '#EDE9FE';
 const GRAY   = '#6B7280';
 
 const fmt = (n: number) =>
