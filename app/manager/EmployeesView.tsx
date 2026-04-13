@@ -149,9 +149,9 @@ export default function EmployeesView() {
 
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={add}    style={btn}>Add</button>
-        <button onClick={update} style={btn}>Update Employee</button>
-        <button onClick={remove} style={btn}>Delete Employee</button>
+        <button onClick={add}    disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Add</button>
+        <button onClick={update} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Update Employee</button>
+        <button onClick={remove} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Delete Employee</button>
       </div>
     </div>
   );

@@ -207,9 +207,9 @@ export default function InventoryView() {
           <input style={input(70)}  value={qtyField}  onChange={e => setQtyField(e.target.value)} />
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={addItem}    style={btn}>Add</button>
-          <button onClick={updateItem} style={btn}>Update Selected</button>
-          <button onClick={deleteItem} style={btn}>Delete Item</button>
+          <button onClick={addItem}    disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Add</button>
+          <button onClick={updateItem} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Update Selected</button>
+          <button onClick={deleteItem} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Delete Item</button>
         </div>
       </div>
     </div>
