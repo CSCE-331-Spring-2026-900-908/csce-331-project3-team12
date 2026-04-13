@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-const ACCENT = '#FFDC78';
+const ACCENT = '#EDE9FE';
 const BORDER = '#E5E7EB';
 const GRAY   = '#6B7280';
 
@@ -18,6 +18,7 @@ export default function EmployeesView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading]     = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [hoveredId, setHoveredId]   = useState<number | null>(null);
   const [name,     setName]     = useState('');
   const [hourly,   setHourly]   = useState('');
   const [position, setPosition] = useState('');
@@ -116,9 +117,11 @@ export default function EmployeesView() {
                 <tr
                   key={emp.employeeid}
                   onClick={() => select(emp)}
+                  onMouseEnter={() => setHoveredId(emp.employeeid)}
+                  onMouseLeave={() => setHoveredId(null)}
                   style={{
                     borderBottom: `1px solid ${BORDER}`,
-                    background: selectedId === emp.employeeid ? '#DBEAFE' : '#fff',
+                    background: selectedId === emp.employeeid ? '#DBEAFE' : hoveredId === emp.employeeid ? '#F3F4F6' : '#fff',
                     cursor: 'pointer',
                     height: 26,
                   }}
@@ -149,9 +152,9 @@ export default function EmployeesView() {
 
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={add}    style={btn}>Add</button>
-        <button onClick={update} style={btn}>Update Employee</button>
-        <button onClick={remove} style={btn}>Delete Employee</button>
+        <button onClick={add}    disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Add</button>
+        <button onClick={update} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Update Employee</button>
+        <button onClick={remove} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Delete Employee</button>
       </div>
     </div>
   );

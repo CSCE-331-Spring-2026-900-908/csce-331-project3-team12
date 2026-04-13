@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-const ACCENT = '#FFDC78';
+const ACCENT = '#EDE9FE';
 const BORDER = '#E5E7EB';
 const GRAY   = '#6B7280';
 
@@ -29,6 +29,7 @@ export default function InventoryView() {
   const [fetchError, setFetchError] = useState('');
   const [mode, setMode]           = useState<Mode>('current');
   const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [hoveredName, setHoveredName]   = useState<string | null>(null);
   const [nameField, setNameField] = useState('');
   const [typeField, setTypeField] = useState('');
   const [qtyField,  setQtyField]  = useState('');
@@ -179,9 +180,11 @@ export default function InventoryView() {
                   <tr
                     key={item.name}
                     onClick={() => selectItem(item)}
+                    onMouseEnter={() => setHoveredName(item.name)}
+                    onMouseLeave={() => setHoveredName(null)}
                     style={{
                       borderBottom: `1px solid ${BORDER}`,
-                      background: selectedName === item.name ? '#DBEAFE' : '#fff',
+                      background: selectedName === item.name ? '#DBEAFE' : hoveredName === item.name ? '#F3F4F6' : '#fff',
                       cursor: 'pointer',
                       height: 26,
                     }}
@@ -207,9 +210,9 @@ export default function InventoryView() {
           <input style={input(70)}  value={qtyField}  onChange={e => setQtyField(e.target.value)} />
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={addItem}    style={btn}>Add</button>
-          <button onClick={updateItem} style={btn}>Update Selected</button>
-          <button onClick={deleteItem} style={btn}>Delete Item</button>
+          <button onClick={addItem}    disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Add</button>
+          <button onClick={updateItem} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Update Selected</button>
+          <button onClick={deleteItem} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Delete Item</button>
         </div>
       </div>
     </div>
