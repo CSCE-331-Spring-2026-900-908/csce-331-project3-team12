@@ -137,22 +137,35 @@ export default function HomePage() {
         </div>
 
         <button
-          onClick={() => {
-            alert("Order submitted! (Hook up API POST next)");
-            setOrderList([]);
-          }}
-          style={{
-            padding: 12,
-            background: "#7b3ff2",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            fontSize: 16,
-            cursor: "pointer",
-          }}
-        >
-          Complete Order
-        </button>
+  onClick={async () => {
+    if (orderList.length === 0) return alert("No items in order.");
+    try {
+      const res = await fetch("/api/submitOrder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderList }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      alert(`Order submitted! Order ID: ${data.orderID}, Total: $${data.total.toFixed(2)}`);
+      setOrderList([]);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit order: " + err);
+    }
+  }}
+  style={{
+    padding: 12,
+    background: "#7b3ff2",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 16,
+    cursor: "pointer",
+  }}
+>
+  Complete Order
+</button>
       </div>
 
       {/* Drink Customization Modal */}
