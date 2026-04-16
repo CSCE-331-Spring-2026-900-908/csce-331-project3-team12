@@ -1,0 +1,37 @@
+/* Container holding both text and image */
+.menu-category {
+  display: flex;
+  align-items: center; /* Centers the image vertically with the text */
+  justify-content: space-between; /* Pushes text left, image right */
+  margin-bottom: 40px; 
+}
+
+/* Ensure the text takes up the right amount of space */
+.menu-text {
+  flex: 1; 
+  padding-right: 20px;
+}
+
+/* Style the boba image */
+.menu-image img {
+  max-width: 180px; /* Adjust this to fit your menu scale */
+  height: auto;
+  
+  /* Pro-tip: Add a CSS drop shadow to make the cup pop off the page! */
+  filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, 0.15)); 
+  mix-blend-mode: multiply; /* <-- ADDED THIS LINE */
+}
+
+/* Alias existing HTML class names so this stylesheet applies immediately */
+.boba-image-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 40px;
+}
+
+.boba-img {
+  max-width: 180px;
+  height: auto;
+  filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, 0.15));
+  mix-blend-mode: multiply; /* <-- ADDED THIS LINE */
+}

@@ -13,7 +13,12 @@ const pool = new Pool({
 
 export async function GET() {
   try {
-    const result = await pool.query('SELECT name, price FROM drinks');
+    const result = await pool.query(
+      `SELECT ingredientname
+       FROM inventory 
+       WHERE ingredienttype = 'topping'`
+    );
+
     return new Response(JSON.stringify(result.rows), { status: 200 });
   } catch (err) {
     console.error(err);
