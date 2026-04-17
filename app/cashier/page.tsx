@@ -14,7 +14,16 @@ const categories = ["Milk Tea", "Fruit Tea", "Matcha", "Slush"];
 
 export default function HomePage() {
   const [menu, setMenu] = useState<MenuItem[]>([]);
-  const [orderList, setOrderList] = useState<string[]>([]); // string for customized orders
+  interface OrderItem {
+    name: string;
+    size: string;
+    sugar: string;
+    ice: string;
+    toppings: string[];
+    price: number;
+    quantity: number;
+  }
+  const [orderList, setOrderList] = useState<OrderItem[]>([]); 
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [selectedDrink, setSelectedDrink] = useState<string | null>(null); // for modal
 
@@ -32,15 +41,33 @@ export default function HomePage() {
     item.name.toLowerCase().includes(activeCategory.toLowerCase().split(" ")[0])
   );
 
-  function handleAddToOrder(order: string) {
+  function handleAddToOrder(order: OrderItem) {
     setOrderList((prev) => [...prev, order]);
   }
 
   function removeFromOrder(index: number) {
     setOrderList((prev) => prev.filter((_, i) => i !== index));
   }
+  
+  function increaseQty(index: number) {
+    setOrderList(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
+  }
 
-  const subtotal = orderList.reduce((sum, item) => sum + parseFloat(item.split("$").pop() || "0"), 0);
+  function decreaseQty(index: number) {
+    setOrderList(prev =>
+      prev.map((item, i) =>
+        i === index
+          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
+          : item
+      )
+    );
+  }
+
+  const subtotal = orderList.reduce((sum, item) => sum + (item.price*item.quantity), 0);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
@@ -119,11 +146,28 @@ export default function HomePage() {
                 marginBottom: 8,
               }}
             >
-              <span>{item}</span>
+              <div>
+                <div style={{ fontWeight: "bold" }}>
+                  {item.name} × {item.quantity}
+                </div>
+                <div style={{ fontSize: 12, color: "#555" }}>
+                  {item.size} · {item.sugar} sugar · {item.ice}
+                </div>
+
+                {item.toppings.length > 0 && (
+                  <div style={{ marginTop: 4 }}>
+                    {item.toppings.map((t, idx) => (
+                      <div key={idx} style={{ fontSize: 12, color: "#777" }}>
+                        • {t}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div style={{ display: "flex", gap: 5 }}>
-                <button onClick={() => removeFromOrder(i)} style={{ cursor: "pointer" }}>
-                  ❌
-                </button>
+                <button onClick={() => decreaseQty(i)}>➖</button>
+                <button onClick={() => increaseQty(i)}>➕</button>
+                <button onClick={() => removeFromOrder(i)}>❌</button>
               </div>
             </div>
           ))}
