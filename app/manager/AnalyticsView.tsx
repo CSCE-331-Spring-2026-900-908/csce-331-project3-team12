@@ -20,12 +20,20 @@ interface Kpis {
 interface DailyRow    { date: string; revenue: number }
 interface UsageRow    { ingredient: string; used: number }
 interface HourlyRow   { hour: string; orders: number; revenue: number }
+interface RecentOrder {
+  id: string;
+  total: number;
+  details: string;
+  date: string;
+  time: string;
+}
 
 interface AnalyticsData {
   kpis:         Kpis;
   dailySales:   DailyRow[];
   productUsage: UsageRow[];
   hourly:       HourlyRow[];
+  recentOrders: RecentOrder[];
 }
 
 export default function AnalyticsView() {
@@ -217,6 +225,53 @@ export default function AnalyticsView() {
           </div>
         </div>
 
+      </div>
+      
+      {/* Recent Orders */}
+      <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 6, padding: 20 }}>
+        <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 'bold', color: TEXT }}>
+          In-Progress Orders
+        </h3>
+
+        <div style={{ overflowY: 'auto', maxHeight: 260 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr>
+                {['Order ID', 'Total', 'Items', 'Date', 'Time'].map(col => (
+                  <th key={col} style={{ textAlign: 'left', padding: '6px 4px', fontWeight: 'bold', borderBottom: `1px solid ${BORDER}` }}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: 8, color: GRAY }}>
+                    Loading...
+                  </td>
+                </tr>
+              ) : (data?.recentOrders ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: 8, color: GRAY }}>
+                    No active orders
+                  </td>
+                </tr>
+              ) : (
+                (data?.recentOrders ?? []).map(order => (
+                  <tr key={order.id} style={{ borderBottom: `1px solid ${BORDER}`, height: 28 }}>
+                    <td style={{ padding: '6px 4px' }}>{order.id}</td>
+                    <td style={{ padding: '6px 4px' }}>{fmt(order.total)}</td>
+                    <td style={{ padding: '6px 4px' }}>{order.details}</td>
+                    <td style={{ padding: '6px 4px' }}>{order.date}</td>
+                    <td style={{ padding: '6px 4px' }}>{order.time}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

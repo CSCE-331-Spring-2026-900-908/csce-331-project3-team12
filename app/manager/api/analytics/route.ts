@@ -12,6 +12,17 @@ const pool = new Pool({
   ssl:      { rejectUnauthorized: false },
 });
 
+function parseDateTime(orderdate: string, ordertime: string) {
+  const paddedTime = ordertime.padStart(5, '0'); // "7:41" -> "07:41"
+
+  if (orderdate.includes('-')) {
+    return new Date(`${orderdate}T${paddedTime}`);
+  } else {
+    const [month, day, year] = orderdate.split('/');
+    return new Date(`${year}-${month}-${day}T${paddedTime}`);
+  }
+}
+
 // GET /manager/api/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD
 // Returns KPIs, daily sales, product usage, and hourly sales in one call.
 export async function GET(req: NextRequest) {
@@ -77,6 +88,27 @@ export async function GET(req: NextRequest) {
       [from, to]
     );
 
+    // In-progress orders (for Recent Orders section)
+    const inProgressRes = await client.query(
+      `SELECT orderid, total, orderdetail, orderdate, ordertime
+      FROM in_progress_orders`
+    );
+
+    const recentOrders = inProgressRes.rows
+    .map(r => {
+      const ts = parseDateTime(r.orderdate, r.ordertime).getTime();
+      return {
+        id: r.orderid,
+        total: parseFloat(r.total),
+        details: r.orderdetail,
+        date: r.orderdate,
+        time: r.ordertime,
+        timestamp: ts,
+      };
+    })
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 10); // latest 10 orders
+
     return NextResponse.json({
       kpis: {
         totalRevenue: rev,
@@ -97,6 +129,7 @@ export async function GET(req: NextRequest) {
         orders:  parseInt(r.total_orders),
         revenue: parseFloat(r.revenue),
       })),
+      recentOrders,
     });
   } catch (e) {
     console.error('[analytics GET]', e);

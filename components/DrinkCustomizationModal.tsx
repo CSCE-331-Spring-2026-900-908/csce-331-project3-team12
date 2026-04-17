@@ -3,10 +3,20 @@
 
 import { useState, useEffect } from "react";
 
+interface OrderItem {
+  name: string;
+  size: string;
+  sugar: string;
+  ice: string;
+  toppings: string[];
+  price: number;
+  quantity: number;
+}
+
 interface DrinkCustomizationModalProps {
   flavor: string;
   onClose: () => void;
-  onAddToCart: (order: string) => void;
+  onAddToCart: (order: OrderItem) => void;
 }
 
 const SIZE_OPTIONS = [
@@ -29,6 +39,7 @@ export default function DrinkCustomizationModal({
   const [toppings, setToppings] = useState<string[]>([]);
   const [availableToppings, setAvailableToppings] = useState<string[]>([]);
   const [total, setTotal] = useState(4.67);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     // fetch toppings from API
@@ -56,10 +67,16 @@ export default function DrinkCustomizationModal({
   };
 
   const handleAdd = () => {
-    const order = `${flavor}, ${size}, ${sugar}, ${ice}${
-      toppings.length ? ", " + toppings.join(", ") : ""
-    }`;
-    onAddToCart(order);
+    onAddToCart({
+      name: flavor,
+      size,
+      sugar,
+      ice,
+      toppings,
+      price: total,
+      quantity,
+    });
+
     onClose();
   };
 
