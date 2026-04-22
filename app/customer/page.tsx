@@ -41,6 +41,7 @@ const TOPPING_PRICE = 0.50;
 const TAX_RATE = 0.08;
 
 export default function CustomerKiosk() {
+  const [language, setLanguage] = useState("en");
   const [view, setView]                     = useState<View>('welcome');
   const [menu, setMenu]                     = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -118,6 +119,22 @@ export default function CustomerKiosk() {
     setCart(prev => prev.filter((_, i) => i !== index));
   }
 
+  async function translateText(text: string) {
+    if (language === "en") return text;
+
+    const res = await fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        target: language,
+      }),
+    });
+
+    const data = await res.json();
+    return data.translatedText;
+  }
+
   async function placeOrder() {
     const res = await fetch('/api/orders', {
       method: 'POST',
@@ -145,6 +162,17 @@ export default function CustomerKiosk() {
         <div style={styles.menuHeader}>
           <span style={styles.logo}>🧋 Boba Shop</span>
           <span style={styles.headerSub}>Tap a drink to customize</span>
+
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            style={{ marginLeft: "auto", padding: "6px" }}
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="zh">中文</option>
+            <option value="ko">한국어</option>
+          </select>
         </div>
 
         <div style={styles.tabs}>
