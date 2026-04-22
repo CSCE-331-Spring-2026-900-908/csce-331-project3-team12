@@ -30,13 +30,26 @@ const CATEGORIES = [
 ];
 
 const SIZES = [
-  { label: 'Small',  modifier: 0 },
-  { label: 'Medium', modifier: 0.5 },
-  { label: 'Large',  modifier: 1.0 },
+  { key: 'sizeSmall',  modifier: 0 },
+  { key: 'sizeMedium', modifier: 0.5 },
+  { key: 'sizeLarge',  modifier: 1.0 },
 ];
 
+const SIZE_LABELS: Record<string, string> = {
+  sizeSmall: 'Small',
+  sizeMedium: 'Medium',
+  sizeLarge: 'Large',
+};
+
 const SUGAR_LEVELS = ['0%', '25%', '50%', '75%', '100%'];
-const ICE_LEVELS   = ['No Ice', 'Less Ice', 'Regular', 'Extra Ice'];
+const ICE_LEVELS = [
+  { key: 'iceNoIce' },
+  { key: 'iceLess' },
+  { key: 'iceRegular' },
+  { key: 'iceExtra' },
+];
+
+
 
 const TOPPING_PRICE = 0.50;
 const TAX_RATE = 0.08;
@@ -52,10 +65,11 @@ export default function CustomerKiosk() {
   const [orderId, setOrderId]               = useState<number | null>(null);
 
   const [customizing, setCustomizing]       = useState<MenuItem | null>(null);
-  const [selSize, setSelSize]               = useState(SIZES[1].label);
+  const [selSize, setSelSize]               = useState(SIZES[1].key);
   const [selSugar, setSelSugar]             = useState('75%');
-  const [selIce, setSelIce]                 = useState('Regular');
+  const [selIce, setSelIce]                 = useState(ICE_LEVELS[2].key);
   const [selToppings, setSelToppings]       = useState<string[]>([]);
+  const [finalOrder, setFinalOrder] = useState<CustomizedItem[]>([]);
 
   const [availableToppings, setAvailableToppings]   = useState<string[]>([]);
   const [translatedToppings, setTranslatedToppings] = useState<string[]>([]);
@@ -149,16 +163,16 @@ export default function CustomerKiosk() {
   const total    = subtotal + tax;
 
   function itemPrice(base: number, size: string, toppings: string[]) {
-    const sizeMod    = SIZES.find(s => s.label === size)?.modifier ?? 0;
+    const sizeMod    = SIZES.find(s => s.key === size)?.modifier ?? 0;
     const toppingMod = toppings.length * TOPPING_PRICE;
     return base + sizeMod + toppingMod;
   }
 
   function openCustomize(item: MenuItem) {
     setCustomizing(item);
-    setSelSize(SIZES[1].label);
+    setSelSize(SIZES[1].key);
     setSelSugar('75%');
-    setSelIce('Regular');
+    setSelIce(ICE_LEVELS[2].key);
     setSelToppings([]);
   }
 
@@ -196,14 +210,42 @@ export default function CustomerKiosk() {
     setCart(prev => prev.filter((_, i) => i !== index));
   }
 
+  function translateTopping(name: string) {
+    const idx = availableToppings.indexOf(name);
+    return idx >= 0 ? (translatedToppings[idx] ?? name) : name;
+  }
+
+  function translateDrinkName(name: string) {
+    const idx = menu.findIndex(m => m.name === name);
+    return idx >= 0 ? (translatedMenu[idx]?.name ?? name) : name;
+  }
+
   async function placeOrder() {
+    const localizedItems = cart.map(item => ({
+      name: translatedMenu.find(t => t.name === item.name)?.name ?? item.name,
+      size: t(item.size as any),
+      sugar: item.sugar,
+      ice: t(item.ice as any),
+      toppings: item.toppings.map(top =>
+        translatedToppings.includes(top) ? top : top
+      ),
+      price: item.price,
+    }));
+
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: cart, total }),
+      body: JSON.stringify({
+        items: cart,              // backend version (English)
+        localizedItems,           // display version (translated)
+        total
+      }),
     });
+
     const data = await res.json();
+
     if (res.ok) {
+      setFinalOrder(cart);   // 👈 save before clearing
       setOrderId(data.orderId);
       setCart([]);
       setView('receipt');
@@ -228,7 +270,18 @@ export default function CustomerKiosk() {
 
   // ── Receipt ─────────────────────────────────────────────────────────────────
   if (view === 'receipt') {
-    return <ReceiptScreen orderId={orderId!} onDone={() => { setView('welcome'); setOrderId(null); }} />;
+    return (
+      <ReceiptScreen
+        orderId={orderId!}
+        items={finalOrder}
+        lang={lang}
+        onDone={() => {
+          setView('welcome');
+          setOrderId(null);
+          setFinalOrder([]);
+        }}
+      />
+    );
   }
 
   // ── Menu + Cart ─────────────────────────────────────────────────────────────
@@ -300,8 +353,8 @@ export default function CustomerKiosk() {
                 <div style={{ flex: 1 }}>
                   <div style={styles.cartItemName}>{item.name}</div>
                   <div style={styles.cartItemMeta}>
-                    {item.size} · {item.sugar} sugar · {item.ice}
-                    {item.toppings.length > 0 && <> · {item.toppings.join(', ')}</>}
+                    {t(item.size as any)} · {t(item.sugar as any)} {t('sugar')}· {t(item.ice as any)}
+                    {item.toppings.length > 0 && <> · {item.toppings.map(translateTopping).join(', ')}</>}
                   </div>
                 </div>
                 <div style={styles.cartItemRight}>
@@ -335,32 +388,37 @@ export default function CustomerKiosk() {
         <div style={styles.overlay} onClick={() => setCustomizing(null)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <h2 style={styles.modalTitle}>{customizing.name}</h2>
-            <p style={styles.modalBase}>Base price: ${customizing.price.toFixed(2)}</p>
+            <p style={styles.modalBase}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
 
-            <OptionGroup label="Size">
+            <OptionGroup label={t("size")} >
               {SIZES.map(s => (
                 <Chip
-                  key={s.label}
-                  label={`${s.label}${s.modifier > 0 ? ` +$${s.modifier.toFixed(2)}` : ''}`}
-                  selected={selSize === s.label}
-                  onClick={() => setSelSize(s.label)}
+                  key={s.key}
+                  label={t(s.key as any)}
+                  selected={selSize === s.key}
+                  onClick={() => setSelSize(s.key)}
                 />
               ))}
             </OptionGroup>
 
-            <OptionGroup label="Sugar Level">
+            <OptionGroup label={t('sugar')}>
               {SUGAR_LEVELS.map(s => (
                 <Chip key={s} label={s} selected={selSugar === s} onClick={() => setSelSugar(s)} />
               ))}
             </OptionGroup>
 
-            <OptionGroup label="Ice Level">
-              {ICE_LEVELS.map(s => (
-                <Chip key={s} label={s} selected={selIce === s} onClick={() => setSelIce(s)} />
+            <OptionGroup label={t("ice")}>
+              {ICE_LEVELS.map(i => (
+                <Chip
+                  key={i.key}
+                  label={t(i.key as any)}
+                  selected={selIce === i.key}
+                  onClick={() => setSelIce(i.key)}
+                />
               ))}
             </OptionGroup>
 
-            <OptionGroup label="Toppings">
+            <OptionGroup label={t('toppings')}>
               {(translatedToppings.length ? translatedToppings : availableToppings).map((top, i) => (
                 <Chip
                   key={availableToppings[i] ?? top}
@@ -387,12 +445,17 @@ export default function CustomerKiosk() {
       {view === 'confirm' && (
         <div style={styles.overlay}>
           <div style={{ ...styles.modal, maxWidth: 480 }}>
-            <h2 style={styles.modalTitle}>Confirm Order</h2>
+            <h2 style={styles.modalTitle}>{t('confirmOrder')}</h2>
             <div style={{ marginBottom: 20 }}>
               {cart.map((item, i) => (
                 <div key={i} style={styles.confirmRow}>
-                  <span>{item.name} ({item.size})</span>
-                  <span>${item.price.toFixed(2)}</span>
+                  <span>
+                    {translateDrinkName(item.name)} ({t(item.size as any)})
+                  </span>
+
+                  <span>
+                    ${item.price.toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -412,7 +475,8 @@ export default function CustomerKiosk() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ReceiptScreen({ orderId, onDone }: { orderId: number; onDone: () => void }) {
+function ReceiptScreen({orderId, items, onDone, lang}: {orderId: number; items: CustomizedItem[]; onDone: () => void; lang: Lang}) {
+  const { t } = useTranslation(lang);
   useEffect(() => {
     const timer = setTimeout(onDone, 8000);
     return () => clearTimeout(timer);
@@ -422,14 +486,15 @@ function ReceiptScreen({ orderId, onDone }: { orderId: number; onDone: () => voi
     <div style={styles.welcome}>
       <div style={styles.welcomeInner}>
         <div style={styles.welcomeEmoji}>✅</div>
-        <h1 style={styles.welcomeTitle}>Order Placed!</h1>
-        <p style={styles.welcomeSub}>Your order number is</p>
+        <h1 style={styles.welcomeTitle}>{t('orderPlaced')}</h1>
+        <p style={styles.welcomeSub}>{t('yourOrderNumberIs')}</p>
         <div style={styles.orderNumber}>#{orderId}</div>
         <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 24, fontSize: 18 }}>
-          We'll have it ready soon. Thank you!
+          {t('thankYouMessage'
+          )}
         </p>
         <button onClick={onDone} style={{ ...styles.addBtn, marginTop: 32, padding: '14px 40px', fontSize: 16 }}>
-          New Order
+          {t('newOrder')}
         </button>
       </div>
     </div>
