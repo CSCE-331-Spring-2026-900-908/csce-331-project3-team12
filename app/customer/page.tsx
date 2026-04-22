@@ -77,6 +77,8 @@ export default function CustomerKiosk() {
     CATEGORIES.map(c => c.label)
   );
   const [translating, setTranslating] = useState(false);
+  const [textScale, setTextScale] = useState(1);
+  const [showA11y, setShowA11y] = useState(false);
 
   // Fetch menu
   useEffect(() => {
@@ -220,6 +222,10 @@ export default function CustomerKiosk() {
     return idx >= 0 ? (translatedMenu[idx]?.name ?? name) : name;
   }
 
+  function scale(size: number) {
+    return size * textScale;
+  }
+
   async function placeOrder() {
     const localizedItems = cart.map(item => ({
       name: translatedMenu.find(t => t.name === item.name)?.name ?? item.name,
@@ -275,6 +281,7 @@ export default function CustomerKiosk() {
         orderId={orderId!}
         items={finalOrder}
         lang={lang}
+        textScale={textScale}
         onDone={() => {
           setView('welcome');
           setOrderId(null);
@@ -289,20 +296,61 @@ export default function CustomerKiosk() {
     <div style={styles.shell}>
       <div style={styles.menuArea}>
         <div style={styles.menuHeader}>
-          <span style={styles.logo}>🧋 Boba Shop</span>
-          <span style={styles.headerSub}>{t('customize')}</span>
+          <span style={{...styles.logo, fontSize: scale(28)}}>🧋 Boba Shop</span>
+          <span style={{...styles.headerSub, fontSize: scale(15)}}>{t('customize')}</span>
 
-          <select
-            value={lang}
-            onChange={e => setLang(e.target.value as Lang)}
-            style={{ marginLeft: 'auto', padding: '6px', borderRadius: 8, border: '1px solid #ddd6fe' }}
-          >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="zh">中文</option>
-            <option value="ko">한국어</option>
-          </select>
-        </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}></div>
+            <button
+              onClick={() => setShowA11y(prev => !prev)}
+              style={{
+                marginLeft: 'auto',
+                marginRight: 8,
+                padding: '6px 12px',
+                borderRadius: 8,
+                border: '1px solid #ddd6fe',
+                background: '#f3f0ff',
+                cursor: 'pointer',
+                fontSize: scale(14),
+                fontWeight: 600,
+                color: '#4c1d95'
+              }}
+            >
+              Accessibility
+            </button>
+
+            <select
+              value={lang}
+              onChange={e => setLang(e.target.value as Lang)}
+              style={{ marginLeft: 'auto', padding: '6px', borderRadius: 8, border: '1px solid #ddd6fe', fontSize: scale(14) }}
+            >
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="zh">中文</option>
+              <option value="ko">한국어</option>
+            </select>
+          </div>
+
+        {showA11y && (
+          <div style={{
+            background: '#f9fafb',
+            padding: 12,
+            borderRadius: 12,
+            marginBottom: 16,
+            border: '1px solid #e5e7eb'
+          }}>
+            <label style={{ fontSize: scale(14), marginRight: 10 }}>
+              Text Size
+            </label>
+            <input
+              type="range"
+              min="0.8"
+              max="1.5"
+              step="0.1"
+              value={textScale}
+              onChange={(e) => setTextScale(Number(e.target.value))}
+            />
+          </div>
+        )}
 
         {/* Category tabs */}
         <div style={styles.tabs}>
@@ -333,8 +381,8 @@ export default function CustomerKiosk() {
         <div style={styles.grid}>
           {filteredMenu.map(item => (
             <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard}>
-              <span style={styles.itemName}>{item.name}</span>
-              <span style={styles.itemPrice}>from ${item.price.toFixed(2)}</span>
+              <span style={{...styles.itemName, fontSize: scale(15)}}>{item.name}</span>
+              <span style={{...styles.itemPrice, fontSize: scale(14)}}>from ${item.price.toFixed(2)}</span>
             </button>
           ))}
         </div>
@@ -342,7 +390,7 @@ export default function CustomerKiosk() {
 
       {/* Cart Panel */}
       <div style={styles.cartPanel}>
-        <h2 style={styles.cartTitle}>{t('yourOrder')}</h2>
+        <h2 style={{...styles.cartTitle, fontSize: scale(22)}}>{t('yourOrder')}</h2>
 
         {cart.length === 0 ? (
           <p style={styles.cartEmpty}>{t('noItems')}</p>
@@ -351,8 +399,8 @@ export default function CustomerKiosk() {
             {cart.map((item, i) => (
               <div key={i} style={styles.cartItem}>
                 <div style={{ flex: 1 }}>
-                  <div style={styles.cartItemName}>{item.name}</div>
-                  <div style={styles.cartItemMeta}>
+                  <div style={{...styles.cartItemName, fontSize: scale(14)}}>{item.name}</div>
+                  <div style={{...styles.cartItemMeta, fontSize: scale(12)}}>
                     {t(item.size as any)} · {t(item.sugar as any)} {t('sugar')}· {t(item.ice as any)}
                     {item.toppings.length > 0 && <> · {item.toppings.map(translateTopping).join(', ')}</>}
                   </div>
@@ -367,7 +415,7 @@ export default function CustomerKiosk() {
         )}
 
         <div style={styles.totals}>
-          <div style={styles.totalRow}><span>{t('subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>
+          <div style={{...styles.totalRow, fontSize: scale(15)}}><span>{t('subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>
           <div style={styles.totalRow}><span>{t('tax')}</span><span>${tax.toFixed(2)}</span></div>
           <div style={{ ...styles.totalRow, ...styles.totalBold }}>
             <span>{t('total')}</span><span>${total.toFixed(2)}</span>
@@ -377,7 +425,7 @@ export default function CustomerKiosk() {
         <button
           onClick={() => cart.length > 0 && setView('confirm')}
           disabled={cart.length === 0}
-          style={{ ...styles.checkoutBtn, opacity: cart.length === 0 ? 0.4 : 1 }}
+          style={{ ...styles.checkoutBtn, fontSize: scale(17), opacity: cart.length === 0 ? 0.4 : 1 }}
         >
           {t('review')}
         </button>
@@ -387,55 +435,58 @@ export default function CustomerKiosk() {
       {customizing && (
         <div style={styles.overlay} onClick={() => setCustomizing(null)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>{customizing.name}</h2>
-            <p style={styles.modalBase}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
+            <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{customizing.name}</h2>
+            <p style={{...styles.modalBase, fontSize: scale(14)}}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
 
-            <OptionGroup label={t("size")} >
+            <OptionGroup label={t("size")} scale ={scale}>
               {SIZES.map(s => (
                 <Chip
                   key={s.key}
                   label={t(s.key as any)}
                   selected={selSize === s.key}
                   onClick={() => setSelSize(s.key)}
+                  scale={scale}
                 />
               ))}
             </OptionGroup>
 
-            <OptionGroup label={t('sugar')}>
+            <OptionGroup label={t('sugar')} scale={scale}>
               {SUGAR_LEVELS.map(s => (
-                <Chip key={s} label={s} selected={selSugar === s} onClick={() => setSelSugar(s)} />
+                <Chip key={s} label={s} selected={selSugar === s} onClick={() => setSelSugar(s)} scale={scale} />
               ))}
             </OptionGroup>
 
-            <OptionGroup label={t("ice")}>
+            <OptionGroup label={t("ice")} scale={scale}>
               {ICE_LEVELS.map(i => (
                 <Chip
                   key={i.key}
                   label={t(i.key as any)}
                   selected={selIce === i.key}
                   onClick={() => setSelIce(i.key)}
+                  scale={scale}
                 />
               ))}
             </OptionGroup>
 
-            <OptionGroup label={t('toppings')}>
+            <OptionGroup label={t('toppings')} scale={scale}>
               {(translatedToppings.length ? translatedToppings : availableToppings).map((top, i) => (
                 <Chip
                   key={availableToppings[i] ?? top}
                   label={`${top} +$${TOPPING_PRICE.toFixed(2)}`}
                   selected={selToppings.includes(top)}
                   onClick={() => toggleTopping(top)}
+                  scale={scale}
                   multi
                 />
               ))}
             </OptionGroup>
 
             <div style={styles.modalFooter}>
-              <span style={styles.modalTotal}>
+              <span style={{...styles.modalTotal, fontSize: scale(22)}}>
                 ${itemPrice(customizing.price, selSize, selToppings).toFixed(2)}
               </span>
-              <button onClick={() => setCustomizing(null)} style={styles.cancelBtn}>{t('cancel')}</button>
-              <button onClick={confirmCustomize} style={styles.addBtn}>{t('addToOrder')}</button>
+              <button onClick={() => setCustomizing(null)} style={{...styles.cancelBtn, fontSize: scale(15)}}>{t('cancel')}</button>
+              <button onClick={confirmCustomize} style={{...styles.addBtn, fontSize: scale(15)}}>{t('addToOrder')}</button>
             </div>
           </div>
         </div>
@@ -445,10 +496,10 @@ export default function CustomerKiosk() {
       {view === 'confirm' && (
         <div style={styles.overlay}>
           <div style={{ ...styles.modal, maxWidth: 480 }}>
-            <h2 style={styles.modalTitle}>{t('confirmOrder')}</h2>
+            <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{t('confirmOrder')}</h2>
             <div style={{ marginBottom: 20 }}>
               {cart.map((item, i) => (
-                <div key={i} style={styles.confirmRow}>
+                <div key={i} style={{...styles.confirmRow, fontSize: scale(15)}}>
                   <span>
                     {translateDrinkName(item.name)} ({t(item.size as any)})
                   </span>
@@ -459,12 +510,12 @@ export default function CustomerKiosk() {
                 </div>
               ))}
             </div>
-            <div style={{ ...styles.totalRow, ...styles.totalBold, marginBottom: 28 }}>
+            <div style={{ ...styles.totalRow, ...styles.totalBold, marginBottom: 28, fontSize: scale(18) }}>
               <span>{t('total')}</span><span>${total.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setView('menu')} style={styles.cancelBtn}>← Back</button>
-              <button onClick={placeOrder} style={{ ...styles.addBtn, flex: 1 }}>{t('placeOrder')}</button>
+              <button onClick={() => setView('menu')} style={{...styles.cancelBtn, fontSize: scale(15)}}>← Back</button>
+              <button onClick={placeOrder} style={{ ...styles.addBtn, flex: 1, fontSize: scale(15) }}>{t('placeOrder')}</button>
             </div>
           </div>
         </div>
@@ -475,8 +526,11 @@ export default function CustomerKiosk() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ReceiptScreen({orderId, items, onDone, lang}: {orderId: number; items: CustomizedItem[]; onDone: () => void; lang: Lang}) {
+function ReceiptScreen({orderId, items, onDone, lang, textScale}: {orderId: number; items: CustomizedItem[]; onDone: () => void; lang: Lang; textScale: number}) {
   const { t } = useTranslation(lang);
+  function scale(size: number) {
+    return size * textScale;
+  }
   useEffect(() => {
     const timer = setTimeout(onDone, 8000);
     return () => clearTimeout(timer);
@@ -486,9 +540,9 @@ function ReceiptScreen({orderId, items, onDone, lang}: {orderId: number; items: 
     <div style={styles.welcome}>
       <div style={styles.welcomeInner}>
         <div style={styles.welcomeEmoji}>✅</div>
-        <h1 style={styles.welcomeTitle}>{t('orderPlaced')}</h1>
-        <p style={styles.welcomeSub}>{t('yourOrderNumberIs')}</p>
-        <div style={styles.orderNumber}>#{orderId}</div>
+        <h1 style={{...styles.welcomeTitle, fontSize: scale(52)}}>{t('orderPlaced')}</h1>
+        <p style={{...styles.welcomeSub, fontSize: scale(22)}}>{t('yourOrderNumberIs')}</p>
+        <div style={{...styles.orderNumber, fontSize: scale(72)}}>#{orderId}</div>
         <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 24, fontSize: 18 }}>
           {t('thankYouMessage'
           )}
@@ -501,21 +555,22 @@ function ReceiptScreen({orderId, items, onDone, lang}: {orderId: number; items: 
   );
 }
 
-function OptionGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function OptionGroup({ label, children, scale }: { label: string; children: React.ReactNode; scale: (n: number) => number; }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={styles.optionLabel}>{label}</div>
+      <div style={{...styles.optionLabel, fontSize: scale(13)}}>{label}</div>
       <div style={styles.optionRow}>{children}</div>
     </div>
   );
 }
 
-function Chip({ label, selected, onClick, multi = false }: {
-  label: string; selected: boolean; onClick: () => void; multi?: boolean;
+function Chip({ label, selected, onClick, multi = false, scale }: {
+  label: string; selected: boolean; onClick: () => void; multi?: boolean; scale: (n: number) => number;
 }) {
   return (
     <button onClick={onClick} style={{
       ...styles.chip,
+      fontSize: scale(14),
       background: selected ? '#7c3aed' : '#f3f0ff',
       color:      selected ? '#fff'    : '#4c1d95',
       border:     selected ? '2px solid #7c3aed' : '2px solid #ddd6fe',
