@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from "@/lib/useTranslation";
 import { Lang } from "@/lib/translations";
+import { useRef } from 'react';
 
 type View = 'welcome' | 'menu' | 'confirm' | 'receipt';
 
@@ -79,6 +80,8 @@ export default function CustomerKiosk() {
   const [translating, setTranslating] = useState(false);
   const [textScale, setTextScale] = useState(1);
   const [showA11y, setShowA11y] = useState(false);
+  const [screenReader, setScreenReader] = useState(false);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch menu
   useEffect(() => {
@@ -148,6 +151,86 @@ export default function CustomerKiosk() {
     translateAll();
   }, [lang, menu, availableToppings]);
 
+  const subtotal = cart.reduce((s, i) => s + i.price, 0);
+  const tax      = subtotal * TAX_RATE;
+  const total    = subtotal + tax;
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+
+    window.speechSynthesis.cancel();
+
+    const sizeLabel = SIZE_LABELS[selSize] ?? selSize;
+
+    speakIfEnabled(
+      `Customization panel opened for ${customizing.name}. No toppings selected.`
+    );
+  }, [customizing, screenReader]);
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+
+    speakIfEnabled(
+      "First choose size. Then sugar level. Then ice level. Finally toppings."
+    );
+  }, [customizing, screenReader]);
+
+  useEffect(() => {
+    if (customizing && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [customizing]);
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+    speakIfEnabled(`Size selected: ${SIZE_LABELS[selSize]}`);
+  }, [selSize]);
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+    speakIfEnabled(`Sugar level: ${selSugar}`);
+  }, [selSugar]);
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+    speakIfEnabled(`Ice level: ${t(selIce as any)}`);
+  }, [selIce]);
+
+  const isFirstRender= useRef(true);
+
+  useEffect(() => {
+    if (!screenReader || !customizing) return;
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (selToppings.length === 0) {
+      speakIfEnabled("No toppings selected");
+    } else {
+      speakIfEnabled(`Toppings selected: ${selToppings.join(", ")}`);
+    }
+  }, [selToppings]);
+
+  useEffect(() => {
+    if (customizing) {
+      isFirstRender.current = true;
+    }
+  }, [customizing]);
+
+  useEffect(() => {
+    if (view !== 'confirm' || !screenReader) return;
+
+    window.speechSynthesis.cancel();
+
+    speakIfEnabled(
+      `Confirm order screen. You have ${cart.length} items. Total is ${total.toFixed(
+        2
+      )} dollars. Review your order or go back to edit.`
+    );
+  }, [view, screenReader, cart.length, total]);
+
   const filteredMenu = (() => {
     const englishCategory =
       CATEGORIES[translatedCategories.indexOf(activeCategory)]?.label ?? activeCategory;
@@ -160,9 +243,7 @@ export default function CustomerKiosk() {
     );
   })();
 
-  const subtotal = cart.reduce((s, i) => s + i.price, 0);
-  const tax      = subtotal * TAX_RATE;
-  const total    = subtotal + tax;
+  
 
   function itemPrice(base: number, size: string, toppings: string[]) {
     const sizeMod    = SIZES.find(s => s.key === size)?.modifier ?? 0;
@@ -176,6 +257,15 @@ export default function CustomerKiosk() {
     setSelSugar('75%');
     setSelIce(ICE_LEVELS[2].key);
     setSelToppings([]);
+  }
+
+  function speakIfEnabled(text: string) {
+    if (!screenReader) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    window.speechSynthesis.speak(utterance);
   }
 
   function confirmCustomize() {
@@ -299,20 +389,18 @@ export default function CustomerKiosk() {
           <span style={{...styles.logo, fontSize: scale(28)}}>🧋 Boba Shop</span>
           <span style={{...styles.headerSub, fontSize: scale(15)}}>{t('customize')}</span>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}></div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               onClick={() => setShowA11y(prev => !prev)}
               style={{
-                marginLeft: 'auto',
-                marginRight: 8,
                 padding: '6px 12px',
                 borderRadius: 8,
                 border: '1px solid #ddd6fe',
-                background: '#f3f0ff',
+                background: showA11y ? '#7c3aed' : '#f3f0ff',
+                color: showA11y ? '#fff' : '#4c1d95',
                 cursor: 'pointer',
                 fontSize: scale(14),
                 fontWeight: 600,
-                color: '#4c1d95'
               }}
             >
               Accessibility
@@ -329,6 +417,7 @@ export default function CustomerKiosk() {
               <option value="ko">한국어</option>
             </select>
           </div>
+        </div>
 
         {showA11y && (
           <div style={{
@@ -336,19 +425,59 @@ export default function CustomerKiosk() {
             padding: 12,
             borderRadius: 12,
             marginBottom: 16,
-            border: '1px solid #e5e7eb'
+            border: '1px solid #e5e7eb',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12
           }}>
-            <label style={{ fontSize: scale(14), marginRight: 10 }}>
-              Text Size
-            </label>
-            <input
-              type="range"
-              min="0.8"
-              max="1.5"
-              step="0.1"
-              value={textScale}
-              onChange={(e) => setTextScale(Number(e.target.value))}
-            />
+
+            {/* TEXT SIZE */}
+            <div>
+              <label style={{ fontSize: scale(14), display: 'block', marginBottom: 6 }}>
+                Text Size
+              </label>
+
+              <input
+                type="range"
+                min="0.8"
+                max="1.5"
+                step="0.1"
+                value={textScale}
+                onChange={(e) => setTextScale(Number(e.target.value))}
+              />
+            </div>
+
+            {/* SCREEN READER */}
+            <button
+              onClick={() => {
+                setScreenReader(prev => {
+                  const next = !prev;
+
+                  if (next) {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance("Screen reader enabled");
+                    window.speechSynthesis.speak(msg);
+                  } else {
+                    window.speechSynthesis.cancel();
+                  }
+
+                  return next;
+                });
+              }}
+              style={{
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid #ddd6fe',
+                background: screenReader ? '#7c3aed' : '#f3f0ff',
+                color: screenReader ? '#fff' : '#4c1d95',
+                cursor: 'pointer',
+                fontSize: scale(14),
+                fontWeight: 600,
+              }}
+            >
+              Screen Reader: {screenReader ? "ON" : "OFF"}
+            </button>
+
           </div>
         )}
 
@@ -360,6 +489,8 @@ export default function CustomerKiosk() {
               <button
                 key={cat.label}
                 onClick={() => setActiveCategory(label)}
+                tabIndex={0}
+                onFocus={() => speakIfEnabled(`Category ${label}`)}
                 style={{
                   ...styles.tab,
                   background: activeCategory === label ? '#7c3aed' : '#f3f0ff',
@@ -380,7 +511,7 @@ export default function CustomerKiosk() {
 
         <div style={styles.grid}>
           {filteredMenu.map(item => (
-            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard}>
+            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard} onFocus={()=> speakIfEnabled(`${item.name}. Price from ${item.price} dollars. Press to customize.`)} tabIndex={0}>
               <span style={{...styles.itemName, fontSize: scale(15)}}>{item.name}</span>
               <span style={{...styles.itemPrice, fontSize: scale(14)}}>from ${item.price.toFixed(2)}</span>
             </button>
@@ -397,7 +528,7 @@ export default function CustomerKiosk() {
         ) : (
           <div style={styles.cartList}>
             {cart.map((item, i) => (
-              <div key={i} style={styles.cartItem}>
+              <div key={i} style={styles.cartItem} tabIndex={0} onFocus={() => speakIfEnabled(`${item.name}, size ${item.size}, ${item.sugar} sugar, ${item.ice}, price ${item.price} dollars`)}>
                 <div style={{ flex: 1 }}>
                   <div style={{...styles.cartItemName, fontSize: scale(14)}}>{item.name}</div>
                   <div style={{...styles.cartItemMeta, fontSize: scale(12)}}>
@@ -407,7 +538,7 @@ export default function CustomerKiosk() {
                 </div>
                 <div style={styles.cartItemRight}>
                   <span style={styles.cartItemPrice}>${item.price.toFixed(2)}</span>
-                  <button onClick={() => removeFromCart(i)} style={styles.removeBtn}>✕</button>
+                  <button onClick={() => removeFromCart(i)} style={styles.removeBtn} tabIndex={0} onFocus={() => speakIfEnabled(`Remove ${item.name} from cart`)}>✕</button>
                 </div>
               </div>
             ))}
@@ -424,6 +555,7 @@ export default function CustomerKiosk() {
 
         <button
           onClick={() => cart.length > 0 && setView('confirm')}
+          onFocus={() => speakIfEnabled(`Review order button. Press to continue to checkout.`)}
           disabled={cart.length === 0}
           style={{ ...styles.checkoutBtn, fontSize: scale(17), opacity: cart.length === 0 ? 0.4 : 1 }}
         >
@@ -434,7 +566,12 @@ export default function CustomerKiosk() {
       {/* Customize Modal */}
       {customizing && (
         <div style={styles.overlay} onClick={() => setCustomizing(null)}>
-          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+          <div
+            ref={modalRef}
+            tabIndex={-1}
+            style={styles.modal}
+            onClick={e => e.stopPropagation()}
+          >
             <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{customizing.name}</h2>
             <p style={{...styles.modalBase, fontSize: scale(14)}}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
 
@@ -446,13 +583,23 @@ export default function CustomerKiosk() {
                   selected={selSize === s.key}
                   onClick={() => setSelSize(s.key)}
                   scale={scale}
+                  tabIndex={0}
+                  onFocus={() => speakIfEnabled(`Size ${t(s.key as any)}`)}
                 />
               ))}
             </OptionGroup>
 
             <OptionGroup label={t('sugar')} scale={scale}>
               {SUGAR_LEVELS.map(s => (
-                <Chip key={s} label={s} selected={selSugar === s} onClick={() => setSelSugar(s)} scale={scale} />
+                <Chip 
+                  key={s} 
+                  label={s} 
+                  selected={selSugar === s} 
+                  onClick={() => setSelSugar(s)} 
+                  scale={scale} 
+                  tabIndex={0} 
+                  onFocus={() => speakIfEnabled(`Sugar level #{}`)} 
+                />
               ))}
             </OptionGroup>
 
@@ -464,6 +611,8 @@ export default function CustomerKiosk() {
                   selected={selIce === i.key}
                   onClick={() => setSelIce(i.key)}
                   scale={scale}
+                  tabIndex={0}
+                  onFocus={() => speakIfEnabled(`Ice Label ${t(i.key as any)}`)}
                 />
               ))}
             </OptionGroup>
@@ -477,6 +626,8 @@ export default function CustomerKiosk() {
                   onClick={() => toggleTopping(top)}
                   scale={scale}
                   multi
+                  tabIndex={0}
+                  onFocus={() => speakIfEnabled(`Topping ${top}`)}
                 />
               ))}
             </OptionGroup>
@@ -485,8 +636,8 @@ export default function CustomerKiosk() {
               <span style={{...styles.modalTotal, fontSize: scale(22)}}>
                 ${itemPrice(customizing.price, selSize, selToppings).toFixed(2)}
               </span>
-              <button onClick={() => setCustomizing(null)} style={{...styles.cancelBtn, fontSize: scale(15)}}>{t('cancel')}</button>
-              <button onClick={confirmCustomize} style={{...styles.addBtn, fontSize: scale(15)}}>{t('addToOrder')}</button>
+              <button onClick={() => setCustomizing(null)} tabIndex={0} onFocus={() => speakIfEnabled(`Cancel. Close customizaiton without adding item.`)} style={{...styles.cancelBtn, fontSize: scale(15)}}>{t('cancel')}</button>
+              <button onClick={confirmCustomize} tabIndex={0} onFocus={() => speakIfEnabled(`Add to order. confirm and add this drink to your cart.`)} style={{...styles.addBtn, fontSize: scale(15)}}>{t('addToOrder')}</button>
             </div>
           </div>
         </div>
@@ -499,7 +650,7 @@ export default function CustomerKiosk() {
             <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{t('confirmOrder')}</h2>
             <div style={{ marginBottom: 20 }}>
               {cart.map((item, i) => (
-                <div key={i} style={{...styles.confirmRow, fontSize: scale(15)}}>
+                <div key={i} style={{...styles.confirmRow, fontSize: scale(15)}} tabIndex={0} onFocus={() => speakIfEnabled(`${translateDrinkName(item.name)} ${t(item.size as any)}, price ${item.price} dollars`)}>
                   <span>
                     {translateDrinkName(item.name)} ({t(item.size as any)})
                   </span>
@@ -514,8 +665,8 @@ export default function CustomerKiosk() {
               <span>{t('total')}</span><span>${total.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setView('menu')} style={{...styles.cancelBtn, fontSize: scale(15)}}>← Back</button>
-              <button onClick={placeOrder} style={{ ...styles.addBtn, flex: 1, fontSize: scale(15) }}>{t('placeOrder')}</button>
+              <button onClick={() => setView('menu')} tabIndex={0} onFocus={() => speakIfEnabled(`Back. Return to menu to edit your order.`)} style={{...styles.cancelBtn, fontSize: scale(15)}}>← Back</button>
+              <button onClick={placeOrder} tabIndex={0} onFocus={() => speakIfEnabled(`Place order button. Finalize your purchase and submit your order.`)} style={{ ...styles.addBtn, flex: 1, fontSize: scale(15) }}>{t('placeOrder')}</button>
             </div>
           </div>
         </div>
@@ -564,11 +715,11 @@ function OptionGroup({ label, children, scale }: { label: string; children: Reac
   );
 }
 
-function Chip({ label, selected, onClick, multi = false, scale }: {
-  label: string; selected: boolean; onClick: () => void; multi?: boolean; scale: (n: number) => number;
+function Chip({ label, selected, onClick, multi = false, scale, tabIndex, onFocus, onKeyDown, }: {
+  label: string; selected: boolean; onClick: () => void; multi?: boolean; scale: (n: number) => number; tabIndex?: number; onFocus?: () => void; onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
 }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} tabIndex={tabIndex} onFocus={onFocus} onKeyDown={(e) => {if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); onClick();}}} style={{
       ...styles.chip,
       fontSize: scale(14),
       background: selected ? '#7c3aed' : '#f3f0ff',
