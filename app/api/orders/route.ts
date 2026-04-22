@@ -27,19 +27,14 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify({ error: 'No items in order' }), { status: 400 });
     }
 
-    // Generate a unique order ID
-    const idResult = await client.query(
-      `SELECT COALESCE(MAX(orderid::integer), 1000) + 1 AS next_id
-       FROM in_progress_orders
-       WHERE orderid ~ '^[0-9]+$'`
-    );
-    const orderId: number = idResult.rows[0].next_id;
+    await client.query('BEGIN');
+    const orderId = `ORD${Date.now().toString().slice(-6)}`;
 
     const now = new Date();
     const orderdate = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
     const ordertime = now.toTimeString().slice(0, 5);  // "HH:MM"
 
-    await client.query('BEGIN');
+
 
     for (const item of items) {
       // Format: "Name, Size, Sugar%, Ice, topping1, topping2"
