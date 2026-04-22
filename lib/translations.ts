@@ -1,0 +1,63 @@
+export const translations = {
+  en: {
+    welcome: "Welcome to Boba Shop",
+    tapStart: "Tap anywhere to start",
+    yourOrder: "Your Order",
+    noItems: "No items yet. Tap a drink to add it.",
+    subtotal: "Subtotal",
+    tax: "Tax (8%)",
+    total: "Total",
+    review: "Review Order →",
+    placeOrder: "Place Order",
+    cancel: "Cancel",
+    addToOrder: "Add to Order",
+    customize: "Tap a drink to customize",
+  },
+
+  es: {
+    welcome: "Bienvenido a Boba Shop",
+    tapStart: "Toca para comenzar",
+    yourOrder: "Tu pedido",
+    noItems: "Sin artículos. Toca una bebida.",
+    subtotal: "Subtotal",
+    tax: "Impuesto (8%)",
+    total: "Total",
+    review: "Revisar pedido →",
+    placeOrder: "Realizar pedido",
+    cancel: "Cancelar",
+    addToOrder: "Agregar",
+    customize: "Toca una bebida para personalizar",
+  },
+
+  zh: {
+    welcome: "欢迎来到珍珠奶茶店",
+    tapStart: "点击开始",
+    yourOrder: "你的订单",
+    noItems: "暂无商品",
+    subtotal: "小计",
+    tax: "税 (8%)",
+    total: "总计",
+    review: "查看订单 →",
+    placeOrder: "下单",
+    cancel: "取消",
+    addToOrder: "加入订单",
+    customize: "点击饮品进行定制",
+  },
+
+  ko: {
+    welcome: "보바 샵에 오신 것을 환영합니다",
+    tapStart: "시작하려면 터치",
+    yourOrder: "주문",
+    noItems: "상품 없음",
+    subtotal: "소계",
+    tax: "세금 (8%)",
+    total: "합계",
+    review: "주문 확인 →",
+    placeOrder: "주문하기",
+    cancel: "취소",
+    addToOrder: "추가",
+    customize: "음료를 선택하세요",
+  },
+} as const;
+
+export type Lang = keyof typeof translations;
