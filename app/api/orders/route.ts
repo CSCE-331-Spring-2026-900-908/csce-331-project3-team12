@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       await client.query(
         `INSERT INTO in_progress_orders (total, orderid, orderdetail, employeeid, employeetip, orderdate, ordertime)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [Math.round(total * 100), orderId, detail, null, null, orderdate, ordertime]
+        [total, orderId, detail, null, null, orderdate, ordertime]
       );
     }
 
