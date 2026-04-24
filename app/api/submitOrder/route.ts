@@ -37,8 +37,8 @@ export async function POST(req: Request) {
       `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}, ${item.toppings.join(", ")} x${item.quantity}`
     ).join(" | ");
 
-    const dateStr = now.toISOString().split("T")[0];
-    const timeStr = now.toTimeString().slice(0, 5);
+    const dateStr = now.toISOString().slice(0, 10);   // YYYY-MM-DD (UTC)
+    const timeStr = now.toISOString().slice(11, 16);  // HH:MM (UTC)
 
     const insertSQL = `
       INSERT INTO in_progress_orders
