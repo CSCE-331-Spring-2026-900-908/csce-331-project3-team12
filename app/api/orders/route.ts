@@ -36,15 +36,17 @@ export async function POST(request: Request) {
 
 
 
-    for (const item of items) {
-      // Format: "Name, Size, Sugar%, Ice, topping1, topping2"
-      const detail = [item.name, item.size, item.sugar, item.ice, ...item.toppings].join(', ');
-      await client.query(
-        `INSERT INTO in_progress_orders (total, orderid, orderdetail, employeeid, employeetip, orderdate, ordertime)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [total, orderId, detail, null, null, orderdate, ordertime]
-      );
-    }
+    const detail = items
+      .map(item =>
+        [item.name, item.size, item.sugar, item.ice, ...item.toppings].join(', ')
+      )
+      .join(' | ');
+
+    await client.query(
+      `INSERT INTO in_progress_orders (total, orderid, orderdetail, employeeid, employeetip, orderdate, ordertime)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [total, orderId, detail, null, null, orderdate, ordertime]
+    );
 
     await client.query('COMMIT');
 
