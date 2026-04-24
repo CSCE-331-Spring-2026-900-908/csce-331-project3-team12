@@ -39,17 +39,16 @@ export async function POST(req: Request) {
     const now = new Date();
     const orderID = `ORD${now.getTime() % 10000}`;
     const orderDetail = orderList
-  .map((item) => {
-    const toppings =
-      item.toppings && item.toppings.length > 0
-        ? item.toppings.join(", ")
-        : "";
+      .map((item) => {
+        const toppings =
+          item.toppings && item.toppings.length > 0
+            ? item.toppings.join(", ")
+            : "";
 
-    return `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}${
-      toppings ? `, ${toppings}` : ""
-    } x${item.quantity ?? 1}`;
-  })
-  .join(" | ");
+        return `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}${toppings ? `, ${toppings}` : ""
+          } x${item.quantity ?? 1}`;
+      })
+      .join(" | ");
     const dateStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
     const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, "0")}`;
 
