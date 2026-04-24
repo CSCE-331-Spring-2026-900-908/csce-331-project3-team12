@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from "next/navigation";
 
 /* ─── Types ─── */
 interface RawOrder {
@@ -19,6 +20,7 @@ interface ParsedDrink {
   sugar: string;
   ice: string;
   toppings: string[];
+  quantity: number;
 }
 
 interface Order {
@@ -33,19 +35,24 @@ interface Order {
 
 /** Parse the orderdetail string:  "Black Milk Tea, Medium, 100%, Regular, lycheeJelly, grassJelly" */
 function parseDrink(detail: string): ParsedDrink {
-  const parts = detail.split(',').map(s => s.trim());
+  const [base, qtyPart] = detail.split(" x");
+  const quantity = qtyPart ? parseInt(qtyPart) : 1;
+
+  const parts = base.split(',').map(s => s.trim());
+
   return {
     name: parts[0] ?? 'Unknown',
     size: parts[1] ?? '',
     sugar: parts[2] ?? '',
     ice: parts[3] ?? '',
     toppings: parts.slice(4).filter(Boolean),
+    quantity,
   };
 }
 
-/** Group raw rows by orderid into Order objects */
 function groupOrders(rows: RawOrder[]): Order[] {
   const map = new Map<string, Order>();
+
   for (const row of rows) {
     if (!map.has(row.orderid)) {
       map.set(row.orderid, {
@@ -56,8 +63,14 @@ function groupOrders(rows: RawOrder[]): Order[] {
         drinks: [],
       });
     }
-    map.get(row.orderid)!.drinks.push(parseDrink(row.orderdetail));
+
+    const drinkStrings = row.orderdetail.split(' | ');
+
+    drinkStrings.forEach((d) => {
+      map.get(row.orderid)!.drinks.push(parseDrink(d));
+    });
   }
+
   return Array.from(map.values());
 }
 
@@ -105,6 +118,7 @@ export default function KitchenPage() {
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now()); // for elapsed-time updates
+  const router = useRouter();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -158,8 +172,18 @@ export default function KitchenPage() {
     <div style={styles.page}>
       {/* Header */}
       <header style={styles.header}>
+        <button
+          onClick={() => router.push("/")}
+          style={styles.backBtn}
+        >
+          ← Back to Portal
+        </button>
+
         <h1 style={styles.title}>Kitchen Display</h1>
-        <span style={styles.badge}>{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
+
+        <span style={styles.badge}>
+          {orders.length} order{orders.length !== 1 ? "s" : ""}
+        </span>
       </header>
 
       {loading ? (
@@ -194,7 +218,7 @@ export default function KitchenPage() {
                   {order.drinks.map((drink, i) => (
                     <div key={i} style={styles.drinkItem}>
                       <div style={styles.drinkName}>
-                        {drink.name}
+                        {drink.name} {drink.quantity > 1 && `×${drink.quantity}`}
                         <span style={styles.sizeBadge}>{drink.size}</span>
                       </div>
                       <div style={styles.drinkMeta}>
@@ -248,6 +272,16 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 16,
     marginBottom: 28,
+  },
+  backBtn: {
+    background: "#334155",
+    color: "#e2e8f0",
+    border: "none",
+    padding: "6px 12px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 600,
   },
   title: {
     fontSize: 28,

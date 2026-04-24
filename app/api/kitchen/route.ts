@@ -11,6 +11,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+
 // GET: Fetch the 6 oldest in-progress orders
 export async function GET() {
   try {
