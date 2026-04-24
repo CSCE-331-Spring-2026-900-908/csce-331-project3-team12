@@ -31,8 +31,10 @@ export async function POST(request: Request) {
     const orderId = `ORD${Date.now().toString().slice(-6)}`;
 
     const now = new Date();
-    const orderdate = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
-    const ordertime = now.toTimeString().slice(0, 5);  // "HH:MM"
+
+    // BOTH in UTC now
+    const orderdate = now.toISOString().slice(0, 10);   // YYYY-MM-DD
+    const ordertime = now.toISOString().slice(11, 19);  // HH:MM:SS
 
 
 

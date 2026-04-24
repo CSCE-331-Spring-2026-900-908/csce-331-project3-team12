@@ -86,12 +86,14 @@ function sugarLabel(s: string): string {
   }
 }
 
-/** Compute minutes elapsed since order was placed */
-function minutesAgo(dateStr: string, timeStr: string): number {
-  // Normalize date — could be "2/25/2026" or "2026-02-25"
-  const orderDate = new Date(`${dateStr}T${timeStr.length === 5 ? timeStr + ':00' : timeStr}`);
-  if (isNaN(orderDate.getTime())) return 0;
-  return Math.max(0, Math.floor((Date.now() - orderDate.getTime()) / 60000));
+function minutesAgo(dateStr: string, timeStr: string, now: number): number {
+  // Build a UTC timestamp manually (no JS parsing)
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const [hour, minute, second = 0] = timeStr.split(":").map(Number);
+
+  const orderTime = Date.UTC(year, month - 1, day, hour, minute, second);
+
+  return Math.max(0, Math.floor((now - orderTime) / 60000));
 }
 
 function formatElapsed(mins: number): string {
@@ -196,7 +198,7 @@ export default function KitchenPage() {
       ) : (
         <div style={styles.grid}>
           {orders.map(order => {
-            const elapsed = minutesAgo(order.orderdate, order.ordertime);
+            const elapsed = minutesAgo(order.orderdate, order.ordertime, now);
             const color = urgencyColor(elapsed);
             const isCompleting = completing === order.orderid;
 
