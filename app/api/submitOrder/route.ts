@@ -15,7 +15,7 @@ const pool = new Pool({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { orderList } = body as { orderList: string[] };
+    const { orderList } = body as { orderList: any[] };
 
     if (!orderList || orderList.length === 0) {
       return new Response("No items in order", { status: 400 });
@@ -28,9 +28,9 @@ export async function POST(req: Request) {
 
     // Calculate subtotal
     let subtotal = 0;
-    orderList.forEach((orderStr) => {
-      const flavor = orderStr.split(",")[0].trim(); // first part is flavor
-      subtotal += menuMap.get(flavor) ?? 6.0; // default price if not found
+
+    orderList.forEach((item) => {
+      subtotal += Number(item.price) * (item.quantity ?? 1);
     });
 
     const tax = subtotal * 0.08;
@@ -38,7 +38,18 @@ export async function POST(req: Request) {
 
     const now = new Date();
     const orderID = `ORD${now.getTime() % 10000}`;
-    const orderDetail = orderList.join(", ");
+    const orderDetail = orderList
+  .map((item) => {
+    const toppings =
+      item.toppings && item.toppings.length > 0
+        ? item.toppings.join(", ")
+        : "";
+
+    return `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}${
+      toppings ? `, ${toppings}` : ""
+    } x${item.quantity ?? 1}`;
+  })
+  .join(" | ");
     const dateStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
     const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, "0")}`;
 
