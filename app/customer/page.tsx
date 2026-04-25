@@ -94,12 +94,23 @@ export default function CustomerKiosk() {
   const [screenReader, setScreenReader] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
+  const [weather, setWeather] = useState<{
+    temp: number;
+    weathercode: number;
+  } | null>(null);
+
   // Fetch menu
   useEffect(() => {
     if (view === 'menu' && menu.length === 0) {
       fetch('/api/menu').then(r => r.json()).then(setMenu);
     }
   }, [view, menu.length]);
+
+  useEffect(() => {
+    fetch('/api/weather')
+      .then(res => res.json())
+      .then(setWeather);
+  }, []);
 
   // Fetch toppings
   useEffect(() => {
@@ -254,7 +265,18 @@ export default function CustomerKiosk() {
     );
   })();
 
+  function getWeatherLabel(code: number) {
+    if (code === 0) return "Clear ☀️";
+    if (code <= 3) return "Cloudy ☁️";
+    if (code <= 48) return "Foggy 🌫️";
+    if (code <= 67) return "Rain 🌧️";
+    if (code <= 77) return "Snow ❄️";
+    if (code >= 95) return "Cloudy 🌥️";
+    if (code <= 99) return "Storm ⛈️";
 
+    // fallback
+    return "Mild 🌤️";
+  }
 
   function itemPrice(base: number, size: string, toppings: string[]) {
     const sizeMod = SIZES.find(s => s.key === size)?.modifier ?? 0;
@@ -500,8 +522,21 @@ export default function CustomerKiosk() {
     <div style={styles.shell}>
       <div style={styles.menuArea}>
         <div style={styles.menuHeader}>
-          <span style={{ ...styles.logo, fontSize: scale(28) }}>🧋 Boba Shop</span>
-          <span style={{ ...styles.headerSub, fontSize: scale(15) }}>{t('customize')}</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ ...styles.logo, fontSize: scale(28) }}>
+              🧋 Boba Shop
+            </span>
+
+            {weather && (
+              <span style={{ fontSize: scale(18), color: '#6b7280' }}>
+                {weather.temp}°F • {getWeatherLabel(weather.weathercode)}
+              </span>
+            )}
+
+            <span style={{ ...styles.headerSub, fontSize: scale(15) }}>
+              {t('customize')}
+            </span>
+          </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
