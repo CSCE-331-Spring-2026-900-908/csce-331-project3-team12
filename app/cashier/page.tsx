@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import DrinkCustomizationModal from "../../components/DrinkCustomizationModal";
 
 // Menu item type
@@ -13,6 +14,7 @@ interface MenuItem {
 const categories = ["Milk Tea", "Fruit Tea", "Matcha", "Slush"];
 
 export default function HomePage() {
+  const router = useRouter();
   const [menu, setMenu] = useState<MenuItem[]>([]);
   interface OrderItem {
     name: string;
@@ -75,6 +77,22 @@ export default function HomePage() {
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
       {/* Left: Menu */}
       <div style={{ flex: 1, padding: 20, background: "#f4f4f4" }}>
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={() => router.push("/")}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "1px solid #d1d5db",
+              background: "#ffffff",
+              color: "#111827",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            ← Back to Portal
+          </button>
+        </div>
         {/* Category tabs */}
         <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
           {categories.map((cat) => (
