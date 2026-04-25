@@ -58,6 +58,17 @@ const TAX_RATE = 0.08;
 export default function CustomerKiosk() {
   const { lang, setLang, t } = useTranslation("en");
 
+  type QuizFlavor = 'sweet' | 'fruity' | 'strong' | 'coffee' | 'unsure';
+  type QuizSweetness = 'low' | 'medium' | 'high';
+  type QuizToppings = 'yes' | 'no';
+
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizStep, setQuizStep] = useState(0);
+
+  const [quizFlavor, setQuizFlavor] = useState<QuizFlavor | null>(null);
+  const [quizSweetness, setQuizSweetness] = useState<QuizSweetness | null>(null);
+  const [quizToppings, setQuizToppings] = useState<QuizToppings | null>(null);
+
   const [view, setView]                     = useState<View>('welcome');
   const [menu, setMenu]                     = useState<MenuItem[]>([]);
   const [translatedMenu, setTranslatedMenu] = useState<MenuItem[]>([]);
@@ -251,12 +262,23 @@ export default function CustomerKiosk() {
     return base + sizeMod + toppingMod;
   }
 
-  function openCustomize(item: MenuItem) {
+  function openCustomize(item: MenuItem, quizDefaults?: {
+    sugar?: string;
+    toppings?: string[];
+  }) {
     setCustomizing(item);
     setSelSize(SIZES[1].key);
-    setSelSugar('75%');
+    setSelSugar(quizDefaults?.sugar ?? '75%');
     setSelIce(ICE_LEVELS[2].key);
-    setSelToppings([]);
+    setSelToppings(quizDefaults?.toppings ?? []);
+  }
+
+  function openQuiz() {
+    setQuizStep(0);
+    setQuizFlavor(null);
+    setQuizSweetness(null);
+    setQuizToppings(null);
+    setShowQuiz(true);
   }
 
   function speakIfEnabled(text: string) {
@@ -314,6 +336,98 @@ export default function CustomerKiosk() {
 
   function scale(size: number) {
     return size * textScale;
+  }
+
+    function recommendDrink(): MenuItem | null {
+    if (!menu.length) return null;
+
+    const lower = (name: string) => name.toLowerCase();
+
+    // FRUITY
+    if (quizFlavor === 'fruity') {
+      return (
+        menu.find(m =>
+          lower(m.name).includes('mango') ||
+          lower(m.name).includes('strawberry') ||
+          lower(m.name).includes('passion')
+        ) || menu[0]
+      );
+    }
+
+    function QuizButton({ label, onClick }: any) {
+      return (
+        <button
+          onClick={onClick}
+          style={{
+            padding: '10px 12px',
+            borderRadius: 12,
+            border: '1px solid #ddd6fe',
+            background: '#f9f7ff',
+            color: '#4c1d95',
+            fontWeight: 600,
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.background = '#ede9fe')}
+          onMouseOut={(e) => (e.currentTarget.style.background = '#f9f7ff')}
+        >
+          {label}
+        </button>
+      );
+    }
+
+    function QuizCard({ title, children }: any) {
+      return (
+        <div style={{ marginTop: 12 }}>
+          <p style={{
+            fontWeight: 600,
+            marginBottom: 10,
+            color: '#374151'
+          }}>
+            {title}
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    // STRONG TEA
+    if (quizFlavor === 'strong') {
+      return (
+        menu.find(m =>
+          lower(m.name).includes('matcha') ||
+          lower(m.name).includes('oolong') ||
+          lower(m.name).includes('earl grey') ||
+          lower(m.name).includes('black tea')
+        ) || menu[0]
+      );
+    }
+
+    // SWEET
+    if (quizFlavor === 'sweet') {
+      return (
+        menu.find(m =>
+          lower(m.name).includes('brown sugar') ||
+          lower(m.name).includes('caramel') ||
+          lower(m.name).includes('taro')
+        ) || menu[0]
+      );
+    }
+
+    // COFFEE-LIKE
+    if (quizFlavor === 'coffee') {
+      return (
+        menu.find(m =>
+          lower(m.name).includes('coffee')
+        ) || menu[0]
+      );
+    }
+
+    // fallback
+    return menu[Math.floor(Math.random() * menu.length)];
   }
 
   async function placeOrder() {
@@ -481,6 +595,23 @@ export default function CustomerKiosk() {
           </div>
         )}
 
+        <button
+          onClick={openQuiz}
+          style={{
+            padding: '8px 14px',
+            borderRadius: 999,
+            border: '1px solid #ddd6fe',
+            background: '#f3f0ff',
+            color: '#4c1d95',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          🎯 Help me choose
+        </button>
+
         {/* Category tabs */}
         <div style={styles.tabs}>
           {CATEGORIES.map((cat, i) => {
@@ -639,6 +770,111 @@ export default function CustomerKiosk() {
               <button onClick={() => setCustomizing(null)} tabIndex={0} onFocus={() => speakIfEnabled(`Cancel. Close customizaiton without adding item.`)} style={{...styles.cancelBtn, fontSize: scale(15)}}>{t('cancel')}</button>
               <button onClick={confirmCustomize} tabIndex={0} onFocus={() => speakIfEnabled(`Add to order. confirm and add this drink to your cart.`)} style={{...styles.addBtn, fontSize: scale(15)}}>{t('addToOrder')}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showQuiz && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h2 style={styles.modalTitle}>Help Me Choose</h2>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16
+            }}>
+              {quizStep === 0 && (
+                <>
+                  <p>What flavor do you prefer?</p>
+
+                  {[
+                    ['sweet', 'Sweet'],
+                    ['fruity', 'Fruity'],
+                    ['strong', 'Strong Tea'],
+                    ['coffee', 'Coffee-like'],
+                    ['unsure', 'Not sure'],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setQuizFlavor(key as QuizFlavor);
+                        setQuizStep(1);
+                      }}
+                      style={styles.addBtn}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {quizStep === 1 && (
+                <>
+                  <p>Sweetness level?</p>
+
+                  {[
+                    ['low', 'Low sugar'],
+                    ['medium', 'Medium'],
+                    ['high', 'Very sweet'],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setQuizSweetness(key as QuizSweetness);
+                        setQuizStep(2);
+                      }}
+                      style={styles.addBtn}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {quizStep === 2 && (
+                <>
+                  <p>Do you want toppings?</p>
+
+                  {[
+                    ['yes', 'Yes'],
+                    ['no', 'No'],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setQuizToppings(key as QuizToppings);
+
+                        const rec = recommendDrink();
+
+                        if (rec) {
+                          const sugarMap = {
+                            low: '25%',
+                            medium: '50%',
+                            high: '100%',
+                          };
+
+                          openCustomize(rec, {
+                            sugar: sugarMap[quizSweetness!],
+                            toppings: key === 'yes' ? ['tapiocaPearls'] : []
+                          });
+                        }
+
+                        setShowQuiz(false);
+                      }}
+                      style={styles.addBtn}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setShowQuiz(false)}
+              style={styles.cancelBtn}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
