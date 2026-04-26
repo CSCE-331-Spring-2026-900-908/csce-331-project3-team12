@@ -39,6 +39,16 @@ export const translations = {
     iceRegular: "Regular Ice",
     iceExtra: "Extra Ice",
 
+    // 🌦️ weather
+    weatherClear: "Clear ☀️",
+    weatherCloudy: "Cloudy ☁️",
+    weatherFoggy: "Foggy 🌫️",
+    weatherRain: "Rain 🌧️",
+    weatherSnow: "Snow ❄️",
+    weatherOtherCloudy: "Cloudy 🌥️",
+    weatherStorm: "Storm ⛈️",
+    weatherMild: "Mild 🌤️",
+
     orderPlaced: "Order Placed!",
     yourOrderNumberIs: "Your order number is",
     thankYouMessage: "We'll have it ready soon. Thank you!",
@@ -80,6 +90,16 @@ export const translations = {
     iceLess: "Poco hielo",
     iceRegular: "Hielo normal",
     iceExtra: "Extra hielo",
+
+    // 🌦️ weather
+    weatherClear: "Despejado ☀️",
+    weatherCloudy: "Nublado ☁️",
+    weatherFoggy: "Niebla 🌫️",
+    weatherRain: "Lluvia 🌧️",
+    weatherSnow: "Nieve ❄️",
+    weatherOtherCloudy: "Parcialmente nublado 🌥️",
+    weatherStorm: "Tormenta ⛈️",
+    weatherMild: "Clima templado 🌤️",
 
     orderPlaced: "¡Pedido realizado!",
     yourOrderNumberIs: "Su número de pedido es",
@@ -123,6 +143,16 @@ export const translations = {
     iceRegular: "正常冰",
     iceExtra: "多冰",
 
+    // 🌦️ weather
+    weatherClear: "晴朗 ☀️",
+    weatherCloudy: "多云 ☁️",
+    weatherFoggy: "雾 🌫️",
+    weatherRain: "下雨 🌧️",
+    weatherSnow: "下雪 ❄️",
+    weatherOtherCloudy: "阴天 🌥️",
+    weatherStorm: "暴风雨 ⛈️",
+    weatherMild: "温和 🌤️",
+
     orderPlaced: "订单已下单！",
     yourOrderNumberIs: "您的订单号是",
     thankYouMessage: "我们很快会准备好，谢谢！",
@@ -164,6 +194,16 @@ export const translations = {
     iceLess: "얼음 적게",
     iceRegular: "보통 얼음",
     iceExtra: "얼음 많이",
+
+    // 🌦️ weather
+    weatherClear: "맑음 ☀️",
+    weatherCloudy: "흐림 ☁️",
+    weatherFoggy: "안개 🌫️",
+    weatherRain: "비 🌧️",
+    weatherSnow: "눈 ❄️",
+    weatherOtherCloudy: "구름 많음 🌥️",
+    weatherStorm: "폭풍 ⛈️",
+    weatherMild: "온화함 🌤️",
 
     orderPlaced: "주문 완료!",
     yourOrderNumberIs: "주문 번호는",
