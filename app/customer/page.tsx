@@ -21,6 +21,16 @@ interface CustomizedItem {
   price: number;
 }
 
+interface NutritionData {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  sugar: number;
+  fiber: number;
+  sodium: number;
+}
+
 const CATEGORIES = [
   { label: 'All',       emoji: null },
   { label: 'Milk Tea',  emoji: '🍵' },
@@ -92,6 +102,9 @@ export default function CustomerKiosk() {
   const [textScale, setTextScale] = useState(1);
   const [showA11y, setShowA11y] = useState(false);
   const [screenReader, setScreenReader] = useState(false);
+  const [nutrition, setNutrition] = useState<NutritionData | null>(null);
+  const [nutritionLoading, setNutritionLoading] = useState(false);
+  const [nutritionMatch, setNutritionMatch] = useState('');
   const modalRef = useRef<HTMLDivElement | null>(null);
 
   const [weather, setWeather] = useState<{
@@ -240,6 +253,39 @@ export default function CustomerKiosk() {
       isFirstRender.current = true;
     }
   }, [customizing]);
+
+  useEffect(() => {
+    async function fetchNutrition() {
+      if (!customizing) {
+        setNutrition(null);
+        setNutritionMatch('');
+        return;
+      }
+
+      const sizeLabel = SIZE_LABELS[selSize] ?? 'Medium';
+      try {
+        setNutritionLoading(true);
+        const params = new URLSearchParams({ query: customizing.name, size: sizeLabel });
+        const res = await fetch(`/api/nutrition?${params.toString()}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.found) {
+          setNutrition(null);
+          setNutritionMatch('');
+          return;
+        }
+        setNutrition(data.nutrition);
+        setNutritionMatch(data.matchedFood ?? '');
+      } catch {
+        setNutrition(null);
+        setNutritionMatch('');
+      } finally {
+        setNutritionLoading(false);
+      }
+    }
+
+    fetchNutrition();
+  }, [customizing, selSize]);
 
   useEffect(() => {
     if (view !== 'confirm' || !screenReader) return;
@@ -740,6 +786,29 @@ export default function CustomerKiosk() {
           >
             <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{customizing.name}</h2>
             <p style={{...styles.modalBase, fontSize: scale(14)}}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
+            <div style={styles.nutritionCard}>
+              <div style={{ ...styles.nutritionTitle, fontSize: scale(14) }}>
+                Nutrition Facts ({SIZE_LABELS[selSize] ?? 'Medium'})
+              </div>
+              {nutritionLoading ? (
+                <div style={{ ...styles.nutritionText, fontSize: scale(13) }}>Loading nutrition data...</div>
+              ) : nutrition ? (
+                <div style={{ ...styles.nutritionGrid, fontSize: scale(13) }}>
+                  <span>Calories: {nutrition.calories}</span>
+                  <span>Protein: {nutrition.protein} g</span>
+                  <span>Carbs: {nutrition.carbs} g</span>
+                  <span>Fat: {nutrition.fat} g</span>
+                  <span>Sugar: {nutrition.sugar} g</span>
+                  <span>Fiber: {nutrition.fiber} g</span>
+                  <span>Sodium: {nutrition.sodium} mg</span>
+                  {nutritionMatch ? <span>USDA match: {nutritionMatch}</span> : null}
+                </div>
+              ) : (
+                <div style={{ ...styles.nutritionText, fontSize: scale(13) }}>
+                  Nutrition data unavailable for this drink right now.
+                </div>
+              )}
+            </div>
 
             <OptionGroup label={t("size")} scale ={scale}>
               {SIZES.map(s => (
@@ -1208,6 +1277,30 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
     color: '#9ca3af',
     marginBottom: 24,
+  },
+  nutritionCard: {
+    background: '#ecfdf5',
+    border: '1px solid #a7f3d0',
+    borderRadius: 12,
+    padding: '10px 12px',
+    marginBottom: 18,
+  },
+  nutritionTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#065f46',
+    marginBottom: 6,
+  },
+  nutritionText: {
+    fontSize: 13,
+    color: '#047857',
+  },
+  nutritionGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 4,
+    fontSize: 13,
+    color: '#065f46',
   },
   optionLabel: {
     fontSize: 13,

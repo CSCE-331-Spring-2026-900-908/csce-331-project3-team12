@@ -1,5 +1,6 @@
 // app/api/submitOrder/route.ts
 import { Pool } from "pg";
+import { computeInventoryUsage } from "@/app/lib/inventoryUsage";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,7 @@ const pool = new Pool({
 });
 
 export async function POST(req: Request) {
+  const client = await pool.connect();
   try {
     const body = await req.json();
     const { orderList } = body as { orderList: any[] };
@@ -23,7 +25,13 @@ export async function POST(req: Request) {
 
     // ✅ Calculate subtotal using actual prices + quantity
     let subtotal = 0;
-    orderList.forEach((item) => {
+    const normalized = orderList.map((item) => ({
+      ...item,
+      quantity: typeof item.quantity === "number" && item.quantity > 0 ? item.quantity : 1,
+      toppings: Array.isArray(item.toppings) ? item.toppings : [],
+    }));
+
+    normalized.forEach((item) => {
       subtotal += item.price * item.quantity;
     });
 
@@ -33,7 +41,7 @@ export async function POST(req: Request) {
     const now = new Date();
     const orderID = `ORD${Date.now().toString().slice(-6)}`;
 
-    const orderDetail = orderList.map(item =>
+    const orderDetail = normalized.map(item =>
       `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}, ${item.toppings.join(", ")} x${item.quantity}`
     ).join(" | ");
 
@@ -46,7 +54,9 @@ export async function POST(req: Request) {
       VALUES ($1, $2, $3, $4, $5, $6, $7)
     `;
 
-    await pool.query(insertSQL, [
+    await client.query("BEGIN");
+
+    await client.query(insertSQL, [
       total,
       orderID,
       orderDetail,
@@ -56,12 +66,27 @@ export async function POST(req: Request) {
       timeStr
     ]);
 
+    const usage = computeInventoryUsage(normalized);
+    for (const [ingredient, amount] of Object.entries(usage)) {
+      await client.query(
+        `UPDATE inventory
+         SET quantity = GREATEST(quantity - $1, 0)
+         WHERE ingredientname = $2`,
+        [amount, ingredient]
+      );
+    }
+
+    await client.query("COMMIT");
+
     return new Response(JSON.stringify({ message: "Order submitted", total, orderID }), {
       status: 200,
     });
 
   } catch (err) {
+    await client.query("ROLLBACK");
     console.error("SubmitOrder ERROR:", err);
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+  } finally {
+    client.release();
   }
 }
