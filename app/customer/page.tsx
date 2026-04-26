@@ -93,6 +93,7 @@ export default function CustomerKiosk() {
   const [selToppings, setSelToppings]       = useState<string[]>([]);
   const [finalOrder, setFinalOrder] = useState<CustomizedItem[]>([]);
 
+  const [waitTime, setWaitTime]                     = useState<number | null>(null);
   const [availableToppings, setAvailableToppings]   = useState<string[]>([]);
   const [translatedToppings, setTranslatedToppings] = useState<string[]>([]);
   const [translatedCategories, setTranslatedCategories] = useState<string[]>(
@@ -311,17 +312,18 @@ export default function CustomerKiosk() {
     );
   })();
 
+
   function getWeatherLabel(code: number) {
-    if (code === 0) return "Clear ☀️";
-    if (code <= 3) return "Cloudy ☁️";
-    if (code <= 48) return "Foggy 🌫️";
-    if (code <= 67) return "Rain 🌧️";
-    if (code <= 77) return "Snow ❄️";
-    if (code >= 95) return "Cloudy 🌥️";
-    if (code <= 99) return "Storm ⛈️";
+    if (code === 0) return t('weatherClear'); //Clear ☀️
+    if (code <= 3) return t('weatherCloudy'); //Cloudy ☁️
+    if (code <= 48) return t('weatherFoggy'); //Foggy 🌫️
+    if (code <= 67) return t('weatherRain'); //Rain 🌧️
+    if (code <= 77) return t('weatherSnow'); //Snow ❄️
+    if (code >= 95) return t('weatherOtherCloudy'); //Cloudy 🌥️"
+    if (code <= 99) return t('weatherStorm'); //Storm ⛈️
 
     // fallback
-    return "Mild 🌤️";
+    return t('weatherMild'); //"Mild 🌤️"
   }
 
   function itemPrice(base: number, size: string, toppings: string[]) {
@@ -406,7 +408,7 @@ export default function CustomerKiosk() {
     return size * textScale;
   }
 
-    function recommendDrink(): MenuItem | null {
+  function recommendDrink(): MenuItem | null {
     if (!menu.length) return null;
 
     const lower = (name: string) => name.toLowerCase();
@@ -525,6 +527,19 @@ export default function CustomerKiosk() {
     if (res.ok) {
       setFinalOrder(cart);   // 👈 save before clearing
       setOrderId(data.orderId);
+
+      // Fetch estimated wait time
+      try {
+        const waitRes = await fetch(`/api/wait-time?orderid=${encodeURIComponent(data.orderId)}`);
+        if (waitRes.ok) {
+          const waitData = await waitRes.json();
+          setWaitTime(waitData.estimatedMinutes);
+        }
+      } catch (err) {
+        console.error('Could not fetch wait time:', err);
+        setWaitTime(null);
+      }
+
       setCart([]);
       setView('receipt');
     } else {
@@ -554,10 +569,12 @@ export default function CustomerKiosk() {
         items={finalOrder}
         lang={lang}
         textScale={textScale}
+        waitTime={waitTime}
         onDone={() => {
           setView('welcome');
           setOrderId(null);
           setFinalOrder([]);
+          setWaitTime(null);
         }}
       />
     );
@@ -1017,7 +1034,7 @@ export default function CustomerKiosk() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ReceiptScreen({orderId, items, onDone, lang, textScale}: {orderId: number; items: CustomizedItem[]; onDone: () => void; lang: Lang; textScale: number}) {
+function ReceiptScreen({orderId, items, onDone, lang, textScale, waitTime}: {orderId: number; items: CustomizedItem[]; onDone: () => void; lang: Lang; textScale: number; waitTime: number | null}) {
   const { t } = useTranslation(lang);
   function scale(size: number) {
     return size * textScale;
@@ -1031,14 +1048,34 @@ function ReceiptScreen({orderId, items, onDone, lang, textScale}: {orderId: numb
     <div style={styles.welcome}>
       <div style={styles.welcomeInner}>
         <div style={styles.welcomeEmoji}>✅</div>
-        <h1 style={{...styles.welcomeTitle, fontSize: scale(52)}}>{t('orderPlaced')}</h1>
-        <p style={{...styles.welcomeSub, fontSize: scale(22)}}>{t('yourOrderNumberIs')}</p>
-        <div style={{...styles.orderNumber, fontSize: scale(72)}}>#{orderId}</div>
-        <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 24, fontSize: 18 }}>
+        <h1 style={{...styles.welcomeTitle, fontSize: scale(30)}}>{t('orderPlaced')}</h1>
+        <p style={{...styles.welcomeSub, fontSize: scale(15)}}>{t('yourOrderNumberIs')}</p>
+        <div style={{...styles.orderNumber, fontSize: scale(50)}}>#{orderId}</div>
+
+        {waitTime !== null && (
+          <div style={{
+            marginTop: 5,
+            padding: '15px 20px',
+            background: 'rgba(255,255,255,0.15)',
+            borderRadius: 15,
+            border: '2px solid rgba(255,255,255,0.25)',
+            display: 'inline-block',
+          }}>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: scale(16), margin: '0 0 6px 0' }}>
+              Estimated wait time
+            </p>
+            <p style={{ color: '#fde68a', fontSize: scale(36), fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
+              ~{waitTime} min{waitTime !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+
+        
+        <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 20, fontSize: 18 }}>
           {t('thankYouMessage'
           )}
         </p>
-        <button onClick={onDone} style={{ ...styles.addBtn, marginTop: 32, padding: '14px 40px', fontSize: 16 }}>
+        <button onClick={onDone} style={{ ...styles.addBtn, marginTop: 20, padding: '14px 40px', fontSize: 16 }}>
           {t('newOrder')}
         </button>
       </div>
