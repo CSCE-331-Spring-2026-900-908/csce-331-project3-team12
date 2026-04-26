@@ -383,10 +383,26 @@ export default function CustomerKiosk() {
         }),
       });
       const data = await res.json();
+
       setChatMessages(prev => [...prev, {
         role: 'assistant',
         text: data.reply ?? 'Sorry, something went wrong.',
       }]);
+
+      if (data.action?.type === 'add_to_cart') {
+        const { name, size, sugar, ice, toppings: itemToppings = [] } = data.action.item;
+        const baseItem = menu.find((m: MenuItem) => m.name === name);
+        if (baseItem) {
+          setCart(prev => [...prev, {
+            name,
+            size,
+            sugar,
+            ice,
+            toppings: itemToppings,
+            price: itemPrice(baseItem.price, size, itemToppings),
+          }]);
+        }
+      }
     } catch {
       setChatMessages(prev => [...prev, {
         role: 'assistant',
