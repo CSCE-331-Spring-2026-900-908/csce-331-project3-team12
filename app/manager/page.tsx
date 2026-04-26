@@ -52,8 +52,8 @@ export default function ManagerPage() {
 
       <div style={{ padding: '28px 40px 40px' }}>
 
-        {/* Nav pills */}
-        <div style={{ marginBottom: 24 }}>
+        {/* Nav pills + Edit Menu button */}
+        <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{
             display: 'inline-grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
@@ -83,6 +83,23 @@ export default function ManagerPage() {
               </button>
             ))}
           </div>
+
+          <button
+            onClick={() => (window.location.href = '/manager/menu')}
+            style={{
+              background: PURPLE,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 20px',
+              fontSize: 14,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              letterSpacing: '0.2px',
+            }}
+          >
+            Edit Menu →
+          </button>
         </div>
 
         {/* Tab content */}
