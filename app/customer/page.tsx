@@ -126,6 +126,28 @@ export default function CustomerKiosk() {
       .then(setWeather);
   }, []);
 
+  useEffect(() => {
+    if (!screenReader || !weather) return;
+
+    speakIfEnabled(
+      `Weather updated. ${weather.temp} degrees Fahrenheit. ${getWeatherLabel(weather.weathercode)}`
+    );
+  }, [weather, screenReader]);
+
+  useEffect(() => {
+    if (!screenReader || !customizing || !nutrition) return;
+
+    speakIfEnabled(
+      `Nutrition facts updated. Calories ${nutrition.calories}. Protein ${nutrition.protein} grams. Sugar ${nutrition.sugar} grams.`
+    );
+  }, [nutrition, screenReader, customizing]);
+
+  useEffect(() => {
+    if (!screenReader || !showQuiz) return;
+
+    speakQuizStep(quizStep);
+  }, [quizStep, showQuiz, screenReader]);
+
   // Fetch toppings
   useEffect(() => {
     fetch('/api/toppings')
@@ -264,9 +286,15 @@ export default function CustomerKiosk() {
       }
 
       const sizeLabel = SIZE_LABELS[selSize] ?? 'Medium';
+
       try {
         setNutritionLoading(true);
-        const params = new URLSearchParams({ query: customizing.name, size: sizeLabel });
+
+        const params = new URLSearchParams({
+          query: customizing.name,
+          size: sizeLabel
+        });
+
         const res = await fetch(`/api/nutrition?${params.toString()}`);
         const data = await res.json();
 
@@ -275,8 +303,31 @@ export default function CustomerKiosk() {
           setNutritionMatch('');
           return;
         }
+
+        // keep raw nutrition data
         setNutrition(data.nutrition);
-        setNutritionMatch(data.matchedFood ?? '');
+
+        // translate ONLY if needed
+        if (data.matchedFood) {
+          if (lang === 'en') {
+            setNutritionMatch(data.matchedFood);
+          } else {
+            const translateRes = await fetch('/api/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                texts: [data.matchedFood],
+                target: lang
+              }),
+            });
+
+            const translateData = await translateRes.json();
+            setNutritionMatch(translateData.translatedTexts[0]);
+          }
+        } else {
+          setNutritionMatch('');
+        }
+
       } catch {
         setNutrition(null);
         setNutritionMatch('');
@@ -286,7 +337,7 @@ export default function CustomerKiosk() {
     }
 
     fetchNutrition();
-  }, [customizing, selSize]);
+  }, [customizing, selSize, lang]); // ADD lang here
 
   useEffect(() => {
     if (view !== 'confirm' || !screenReader) return;
@@ -320,7 +371,7 @@ export default function CustomerKiosk() {
     if (code <= 67) return t('weatherRain'); //Rain 🌧️
     if (code <= 77) return t('weatherSnow'); //Snow ❄️
     if (code >= 95) return t('weatherOtherCloudy'); //Cloudy 🌥️"
-    if (code <= 99) return t('weatherStorm'); //Storm ⛈️
+    if (code >= 95 && code <= 99) return t('weatherStorm'); //Storm ⛈️
 
     // fallback
     return t('weatherMild'); //"Mild 🌤️"
@@ -349,6 +400,28 @@ export default function CustomerKiosk() {
     setQuizSweetness(null);
     setQuizToppings(null);
     setShowQuiz(true);
+  }
+
+  function speakQuizStep(step: number) {
+    window.speechSynthesis.cancel();
+
+    if (step === 0) {
+      speakIfEnabled(
+        `Question 1. What kind of flavor do you prefer? Sweet, fruity, strong tea, coffee, or unsure.`
+      );
+    }
+
+    if (step === 1) {
+      speakIfEnabled(
+        `Question 2. What sweetness level do you want? Low, medium, or high.`
+      );
+    }
+
+    if (step === 2) {
+      speakIfEnabled(
+        `Question 3. Do you want toppings? Yes or no.`
+      );
+    }
   }
 
   function speakIfEnabled(text: string) {
@@ -603,7 +676,19 @@ export default function CustomerKiosk() {
 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
-              onClick={() => setShowA11y(prev => !prev)}
+              onClick={() => {
+                setShowA11y(prev => {
+                  const next = !prev;
+
+                  if (screenReader) {
+                    speakIfEnabled(
+                      `Accessibility menu ${next ? "opened" : "closed"}`
+                    );
+                  }
+
+                  return next;
+                });
+              }}
               style={{
                 padding: '6px 12px',
                 borderRadius: 8,
@@ -620,7 +705,14 @@ export default function CustomerKiosk() {
 
             <select
               value={lang}
-              onChange={e => setLang(e.target.value as Lang)}
+              onChange={e => {
+                const newLang = e.target.value as Lang;
+                setLang(newLang);
+
+                if (screenReader) {
+                  speakIfEnabled(`Language changed to ${newLang}`);
+                }
+              }}
               style={{ marginLeft: 'auto', padding: '6px', borderRadius: 8, border: '1px solid #ddd6fe', fontSize: scale(14) }}
             >
               <option value="en">English</option>
@@ -694,7 +786,16 @@ export default function CustomerKiosk() {
         )}
 
         <button
-          onClick={openQuiz}
+          onClick={() => {
+            openQuiz();
+            speakIfEnabled(`Help me choose quiz opened`);
+          }}
+          onFocus={() => speakIfEnabled(`Help me choose. Opens drink recommendation quiz.`)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              speakIfEnabled(`Help me choose quiz opened`);
+            }
+          }}
           style={{
             padding: '8px 14px',
             borderRadius: 999,
@@ -707,7 +808,7 @@ export default function CustomerKiosk() {
             whiteSpace: 'nowrap',
           }}
         >
-          🎯 Help me choose
+          🎯 {t('quizHelpButton')}
         </button>
 
         {/* Category tabs */}
@@ -805,24 +906,30 @@ export default function CustomerKiosk() {
             <p style={{...styles.modalBase, fontSize: scale(14)}}>{t("basePrice")}: ${customizing.price.toFixed(2)}</p>
             <div style={styles.nutritionCard}>
               <div style={{ ...styles.nutritionTitle, fontSize: scale(14) }}>
-                Nutrition Facts ({SIZE_LABELS[selSize] ?? 'Medium'})
+                {t('nutritionFacts')} ({t(selSize as any)})
               </div>
+
               {nutritionLoading ? (
-                <div style={{ ...styles.nutritionText, fontSize: scale(13) }}>Loading nutrition data...</div>
+                <div style={{ ...styles.nutritionText, fontSize: scale(13) }}>
+                  {t('loadingNutrition')}
+                </div>
               ) : nutrition ? (
                 <div style={{ ...styles.nutritionGrid, fontSize: scale(13) }}>
-                  <span>Calories: {nutrition.calories}</span>
-                  <span>Protein: {nutrition.protein} g</span>
-                  <span>Carbs: {nutrition.carbs} g</span>
-                  <span>Fat: {nutrition.fat} g</span>
-                  <span>Sugar: {nutrition.sugar} g</span>
-                  <span>Fiber: {nutrition.fiber} g</span>
-                  <span>Sodium: {nutrition.sodium} mg</span>
-                  {nutritionMatch ? <span>USDA match: {nutritionMatch}</span> : null}
+                  <span>{t('calories')}: {nutrition.calories}</span>
+                  <span>{t('protein')}: {nutrition.protein} g</span>
+                  <span>{t('carbs')}: {nutrition.carbs} g</span>
+                  <span>{t('fat')}: {nutrition.fat} g</span>
+                  <span>{t('sugar')}: {nutrition.sugar} g</span>
+                  <span>{t('fiber')}: {nutrition.fiber} g</span>
+                  <span>{t('sodium')}: {nutrition.sodium} mg</span>
+
+                  {nutritionMatch ? (
+                    <span>{t('usdaMatch')}: {nutritionMatch}</span>
+                  ) : null}
                 </div>
               ) : (
                 <div style={{ ...styles.nutritionText, fontSize: scale(13) }}>
-                  Nutrition data unavailable for this drink right now.
+                  {t('nutritionUnavailable')}
                 </div>
               )}
             </div>
@@ -850,7 +957,7 @@ export default function CustomerKiosk() {
                   onClick={() => setSelSugar(s)} 
                   scale={scale} 
                   tabIndex={0} 
-                  onFocus={() => speakIfEnabled(`Sugar level #{}`)} 
+                  onFocus={() => speakIfEnabled(`Sugar level ${s}`)} 
                 />
               ))}
             </OptionGroup>
@@ -898,7 +1005,7 @@ export default function CustomerKiosk() {
       {showQuiz && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
-            <h2 style={styles.modalTitle}>Help Me Choose</h2>
+            <h2 style={styles.modalTitle}>{t('quizTitle')}</h2>
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -906,20 +1013,26 @@ export default function CustomerKiosk() {
             }}>
               {quizStep === 0 && (
                 <>
-                  <p>What flavor do you prefer?</p>
+                  <p>{t('quizFlavorQuestion')}</p>
 
                   {[
-                    ['sweet', 'Sweet'],
-                    ['fruity', 'Fruity'],
-                    ['strong', 'Strong Tea'],
-                    ['coffee', 'Coffee-like'],
-                    ['unsure', 'Not sure'],
+                    ['sweet', t('quizSweet')],
+                    ['fruity', t('quizFruity')],
+                    ['strong', t('quizStrong')],
+                    ['coffee', t('quizCoffee')],
+                    ['unsure', t('quizUnsure')],
                   ].map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => {
                         setQuizFlavor(key as QuizFlavor);
                         setQuizStep(1);
+                      }}
+                      onFocus={() => speakIfEnabled(label)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          speakIfEnabled(label);
+                        }
                       }}
                       style={styles.addBtn}
                     >
@@ -934,15 +1047,21 @@ export default function CustomerKiosk() {
                   <p>Sweetness level?</p>
 
                   {[
-                    ['low', 'Low sugar'],
-                    ['medium', 'Medium'],
-                    ['high', 'Very sweet'],
+                    ['low', t('quizLow')],
+                    ['medium', t('quizMedium')],
+                    ['high', t('quizHigh')],
                   ].map(([key, label]) => (
                     <button
                       key={key}
                       onClick={() => {
                         setQuizSweetness(key as QuizSweetness);
                         setQuizStep(2);
+                      }}
+                      onFocus={() => speakIfEnabled(String(label))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          speakIfEnabled(String(label));
+                        }
                       }}
                       style={styles.addBtn}
                     >
@@ -957,8 +1076,8 @@ export default function CustomerKiosk() {
                   <p>Do you want toppings?</p>
 
                   {[
-                    ['yes', 'Yes'],
-                    ['no', 'No'],
+                    ['yes', t('quizYes')],
+                    ['no', t('quizNo')],
                   ].map(([key, label]) => (
                     <button
                       key={key}
@@ -982,6 +1101,12 @@ export default function CustomerKiosk() {
 
                         setShowQuiz(false);
                       }}
+                      onFocus={() => speakIfEnabled(String(label))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          speakIfEnabled(String(label));
+                        }
+                      }}
                       style={styles.addBtn}
                     >
                       {label}
@@ -994,7 +1119,7 @@ export default function CustomerKiosk() {
               onClick={() => setShowQuiz(false)}
               style={styles.cancelBtn}
             >
-              Cancel
+              {t('quizCancel')}
             </button>
           </div>
         </div>
@@ -1062,7 +1187,7 @@ function ReceiptScreen({orderId, items, onDone, lang, textScale, waitTime}: {ord
             display: 'inline-block',
           }}>
             <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: scale(16), margin: '0 0 6px 0' }}>
-              Estimated wait time
+              {t('estimatedWaitTime')}
             </p>
             <p style={{ color: '#fde68a', fontSize: scale(36), fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
               ~{waitTime} min{waitTime !== 1 ? 's' : ''}
@@ -1071,11 +1196,11 @@ function ReceiptScreen({orderId, items, onDone, lang, textScale, waitTime}: {ord
         )}
 
         
-        <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 20, fontSize: 18 }}>
+        <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: 20, fontSize: scale(18) }}>
           {t('thankYouMessage'
           )}
         </p>
-        <button onClick={onDone} style={{ ...styles.addBtn, marginTop: 20, padding: '14px 40px', fontSize: 16 }}>
+        <button onClick={onDone} style={{ ...styles.addBtn, marginTop: 20, padding: '14px 40px', fontSize: scale(16) }}>
           {t('newOrder')}
         </button>
       </div>
