@@ -21,6 +21,18 @@ export const translations = {
     ice: "Ice Level",
     toppings: "Toppings",
 
+    // 🍽️ nutrition
+    nutritionFacts: "Nutrition Facts",
+    loadingNutrition: "Loading nutrition data...",
+    calories: "Calories",
+    protein: "Protein",
+    carbs: "Carbohydrates",
+    fat: "Fat",
+    fiber: "Fiber",
+    sodium: "Sodium",
+    usdaMatch: "USDA match",
+    nutritionUnavailable: "Nutrition data unavailable for this drink right now.",
+
     // size options
     sizeSmall: "Small",
     sizeMedium: "Medium",
@@ -49,9 +61,32 @@ export const translations = {
     weatherStorm: "Storm ⛈️",
     weatherMild: "Mild 🌤️",
 
+    // 🎯 quiz / Q&A
+    quizTitle: "Help Me Choose",
+    quizFlavorQuestion: "What flavor do you prefer?",
+    quizSweetnessQuestion: "Sweetness level?",
+    quizToppingsQuestion: "Do you want toppings?",
+
+    quizSweet: "Sweet",
+    quizFruity: "Fruity",
+    quizStrong: "Strong Tea",
+    quizCoffee: "Coffee-like",
+    quizUnsure: "Not sure",
+
+    quizLow: "Low sugar",
+    quizMedium: "Medium",
+    quizHigh: "Very sweet",
+
+    quizYes: "Yes",
+    quizNo: "No",
+
+    quizCancel: "Cancel",
+    quizHelpButton: "Help me choose",
+
     orderPlaced: "Order Placed!",
     yourOrderNumberIs: "Your order number is",
     thankYouMessage: "We'll have it ready soon. Thank you!",
+    estimatedWaitTime: "Estimated wait time",
     newOrder: "New Order",
   },
 
@@ -75,6 +110,18 @@ export const translations = {
     sugar: "Nivel de azúcar",
     ice: "Nivel de hielo",
     toppings: "Toppings",
+
+    // 🍽️ nutrition
+    nutritionFacts: "Información nutricional",
+    loadingNutrition: "Cargando información nutricional...",
+    calories: "Calorías",
+    protein: "Proteína",
+    carbs: "Carbohidratos",
+    fat: "Grasa",
+    fiber: "Fibra",
+    sodium: "Sodio",
+    usdaMatch: "Coincidencia USDA",
+    nutritionUnavailable: "Datos nutricionales no disponibles en este momento.",
 
     sizeSmall: "Pequeño",
     sizeMedium: "Mediano",
@@ -101,9 +148,31 @@ export const translations = {
     weatherStorm: "Tormenta ⛈️",
     weatherMild: "Clima templado 🌤️",
 
+    quizTitle: "Ayúdame a elegir",
+    quizFlavorQuestion: "¿Qué sabor prefieres?",
+    quizSweetnessQuestion: "¿Nivel de dulzura?",
+    quizToppingsQuestion: "¿Quieres toppings?",
+
+    quizSweet: "Dulce",
+    quizFruity: "Frutal",
+    quizStrong: "Té fuerte",
+    quizCoffee: "Tipo café",
+    quizUnsure: "No estoy seguro",
+
+    quizLow: "Poco azúcar",
+    quizMedium: "Medio",
+    quizHigh: "Muy dulce",
+
+    quizYes: "Sí",
+    quizNo: "No",
+
+    quizCancel: "Cancelar",
+    quizHelpButton: "Ayúdame a elegir",
+
     orderPlaced: "¡Pedido realizado!",
     yourOrderNumberIs: "Su número de pedido es",
     thankYouMessage: "Lo tendremos listo pronto. ¡Gracias!",
+    estimatedWaitTime: "Tiempo estimado de espera",
     newOrder: "Nuevo pedido",
   },
 
@@ -127,6 +196,18 @@ export const translations = {
     sugar: "糖度",
     ice: "冰量",
     toppings: "配料",
+
+    // 🍽️ nutrition
+    nutritionFacts: "营养成分",
+    loadingNutrition: "正在加载营养数据...",
+    calories: "卡路里",
+    protein: "蛋白质",
+    carbs: "碳水化合物",
+    fat: "脂肪",
+    fiber: "膳食纤维",
+    sodium: "钠",
+    usdaMatch: "USDA 匹配",
+    nutritionUnavailable: "当前无法获取该饮品的营养信息。",
 
     sizeSmall: "小杯",
     sizeMedium: "中杯",
@@ -153,9 +234,31 @@ export const translations = {
     weatherStorm: "暴风雨 ⛈️",
     weatherMild: "温和 🌤️",
 
+    quizTitle: "帮我选择",
+    quizFlavorQuestion: "你喜欢什么口味？",
+    quizSweetnessQuestion: "甜度？",
+    quizToppingsQuestion: "要加配料吗？",
+
+    quizSweet: "甜",
+    quizFruity: "水果味",
+    quizStrong: "浓茶",
+    quizCoffee: "咖啡味",
+    quizUnsure: "不确定",
+
+    quizLow: "低糖",
+    quizMedium: "中等",
+    quizHigh: "很甜",
+
+    quizYes: "是",
+    quizNo: "否",
+
+    quizCancel: "取消",
+    quizHelpButton: "帮我选择",
+
     orderPlaced: "订单已下单！",
     yourOrderNumberIs: "您的订单号是",
     thankYouMessage: "我们很快会准备好，谢谢！",
+    estimatedWaitTime: "预计等待时间",
     newOrder: "新订单",
   },
 
@@ -179,6 +282,18 @@ export const translations = {
     sugar: "당도",
     ice: "얼음",
     toppings: "토핑",
+
+    // 🍽️ nutrition
+    nutritionFacts: "영양 정보",
+    loadingNutrition: "영양 정보 불러오는 중...",
+    calories: "칼로리",
+    protein: "단백질",
+    carbs: "탄수화물",
+    fat: "지방",
+    fiber: "식이섬유",
+    sodium: "나트륨",
+    usdaMatch: "USDA 일치 항목",
+    nutritionUnavailable: "현재 이 음료의 영양 정보를 사용할 수 없습니다.",
 
     sizeSmall: "스몰",
     sizeMedium: "미디엄",
@@ -205,9 +320,31 @@ export const translations = {
     weatherStorm: "폭풍 ⛈️",
     weatherMild: "온화함 🌤️",
 
+    quizTitle: "추천 받기",
+    quizFlavorQuestion: "어떤 맛을 원하시나요?",
+    quizSweetnessQuestion: "당도는?",
+    quizToppingsQuestion: "토핑을 추가하시겠어요?",
+
+    quizSweet: "달콤한",
+    quizFruity: "과일 맛",
+    quizStrong: "진한 차",
+    quizCoffee: "커피 맛",
+    quizUnsure: "잘 모르겠어요",
+
+    quizLow: "저당",
+    quizMedium: "보통",
+    quizHigh: "매우 달게",
+
+    quizYes: "예",
+    quizNo: "아니요",
+
+    quizCancel: "취소",
+    quizHelpButton: "추천 받기",
+
     orderPlaced: "주문 완료!",
     yourOrderNumberIs: "주문 번호는",
     thankYouMessage: "곧 준비해 드리겠습니다. 감사합니다!",
+    estimatedWaitTime: "예상 대기 시간",
     newOrder: "새 주문",
   },
 } as const;
