@@ -200,7 +200,7 @@ export default function MenuManagementPage() {
             Drinks Menu
           </h2>
 
-          <div style={{ overflowX: 'auto', marginBottom: 16 }}>
+          <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 480, marginBottom: 16 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', fontSize: 14, borderRadius: 8, overflow: 'hidden' }}>
               <thead>
                 <tr style={{ background: '#F3F0FF', borderBottom: `2px solid ${PURPLE_XL}` }}>

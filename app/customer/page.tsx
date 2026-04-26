@@ -78,6 +78,7 @@ export default function CustomerKiosk() {
   ]);
   const [chatInput, setChatInput]       = useState('');
   const [chatLoading, setChatLoading]   = useState(false);
+  const [chatBubbleHovered, setChatBubbleHovered] = useState(false);
   const chatEndRef                      = useRef<HTMLDivElement>(null);
 
   const [availableToppings, setAvailableToppings]   = useState<string[]>([]);
@@ -870,6 +871,8 @@ export default function CustomerKiosk() {
           {/* Toggle button */}
           <button
             onClick={() => setChatOpen(prev => !prev)}
+            onMouseEnter={() => setChatBubbleHovered(true)}
+            onMouseLeave={() => setChatBubbleHovered(false)}
             style={{
               position: 'fixed',
               bottom: 28,
@@ -886,8 +889,9 @@ export default function CustomerKiosk() {
               justifyContent: 'center',
               fontSize: chatOpen ? 22 : 26,
               zIndex: 151,
-              transition: 'background 0.2s',
               color: '#fff',
+              opacity: chatOpen || chatBubbleHovered ? 1 : 0.5,
+              transition: 'opacity 0.2s, background 0.2s',
             }}
           >
             {chatOpen ? '✕' : '💬'}
