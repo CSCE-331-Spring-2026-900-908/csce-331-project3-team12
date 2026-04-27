@@ -198,7 +198,7 @@ export default function DrinkCustomizationModal({
         </div>
 
         {/* Total */}
-        <div className="mb-4 font-bold text-xl">Total: ${total.toFixed(2)}</div>
+        <div className="mb-4 font-bold text-xl">Total: ${(total*quantity).toFixed(2)}</div>
 
         {/* Recipe guidance by selected cup size */}
         <div className="mb-5 rounded-md border border-purple-200 bg-purple-50 p-4">
@@ -213,6 +213,27 @@ export default function DrinkCustomizationModal({
 
         {/* Buttons */}
         <div className="flex justify-end gap-4">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
+  <span style={{ fontWeight: 600 }}>Quantity</span>
+
+  <button
+    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+    style={{ minWidth: 36, minHeight: 36 }}
+  >
+    −
+  </button>
+
+  <span style={{ fontWeight: 700 }}>{quantity}</span>
+
+  <button
+    onClick={() => setQuantity(q => q + 1)}
+    style={{ minWidth: 36, minHeight: 36 }}
+  >
+    +
+  </button>
+</div>
+
+
           <button
             onClick={onClose}
             className="px-4 py-2 rounded bg-gray-300"
