@@ -50,6 +50,7 @@ export const translations = {
     iceLess: "Less Ice",
     iceRegular: "Regular Ice",
     iceExtra: "Extra Ice",
+    iceHot: "Hot",
 
     // 🌦️ weather
     weatherClear: "Clear ☀️",
@@ -137,6 +138,7 @@ export const translations = {
     iceLess: "Poco hielo",
     iceRegular: "Hielo normal",
     iceExtra: "Extra hielo",
+    iceHot: "Caliente",
 
     // 🌦️ weather
     weatherClear: "Despejado ☀️",
@@ -223,6 +225,7 @@ export const translations = {
     iceLess: "少冰",
     iceRegular: "正常冰",
     iceExtra: "多冰",
+    iceHot: "热饮",
 
     // 🌦️ weather
     weatherClear: "晴朗 ☀️",
@@ -309,6 +312,7 @@ export const translations = {
     iceLess: "얼음 적게",
     iceRegular: "보통 얼음",
     iceExtra: "얼음 많이",
+    iceHot: "뜨거운",
 
     // 🌦️ weather
     weatherClear: "맑음 ☀️",

@@ -85,7 +85,7 @@ export default function DrinkCustomizationModal({
   const toggleTopping = (topping: string) => {
     if (toppings.includes(topping)) {
       setToppings(toppings.filter((t) => t !== topping));
-    } else if (toppings.length < 2) {
+    } else {
       setToppings([...toppings, topping]);
     }
   };
@@ -165,16 +165,15 @@ export default function DrinkCustomizationModal({
 
         {/* Toppings */}
         <div className="mb-4">
-          <h3 className="font-semibold mb-2">Toppings (max 2)</h3>
+          <h3 className="font-semibold mb-2">Toppings</h3>
           <div className="flex gap-2 flex-wrap">
            {availableToppings.map((t, i) => (
   <button
     key={`${t}-${i}`}
                 onClick={() => toggleTopping(t)}
-                disabled={!toppings.includes(t) && toppings.length >= 2}
                 className={`px-4 py-2 rounded ${
                   toppings.includes(t) ? "bg-orange-400 text-white" : "bg-yellow-300"
-                } disabled:opacity-50`}
+                }`}
               >
                 {t}
               </button>

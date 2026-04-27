@@ -19,6 +19,7 @@ interface CustomizedItem {
   ice: string;
   toppings: string[];
   price: number;
+  quantity: number;
 }
 
 interface NutritionData {
@@ -54,6 +55,7 @@ const SIZE_LABELS: Record<string, string> = {
 
 const SUGAR_LEVELS = ['0%', '25%', '50%', '75%', '100%', '125%'];
 const ICE_LEVELS = [
+  { key: 'iceHot' },
   { key: 'iceNoIce' },
   { key: 'iceLess' },
   { key: 'iceRegular' },
@@ -91,6 +93,7 @@ export default function CustomerKiosk() {
   const [selSugar, setSelSugar]             = useState('75%');
   const [selIce, setSelIce]                 = useState(ICE_LEVELS[2].key);
   const [selToppings, setSelToppings]       = useState<string[]>([]);
+  const [selQuantity, setSelQuantity]       = useState(1);
   const [finalOrder, setFinalOrder] = useState<CustomizedItem[]>([]);
 
   const [waitTime, setWaitTime]                     = useState<number | null>(null);
@@ -209,7 +212,7 @@ export default function CustomerKiosk() {
     translateAll();
   }, [lang, menu, availableToppings]);
 
-  const subtotal = cart.reduce((s, i) => s + i.price, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const tax      = subtotal * TAX_RATE;
   const total    = subtotal + tax;
 
@@ -390,8 +393,9 @@ export default function CustomerKiosk() {
     setCustomizing(item);
     setSelSize(SIZES[1].key);
     setSelSugar(quizDefaults?.sugar ?? '75%');
-    setSelIce(ICE_LEVELS[2].key);
+    setSelIce(ICE_LEVELS[3].key);
     setSelToppings(quizDefaults?.toppings ?? []);
+    setSelQuantity(1);
   }
 
   function openQuiz() {
@@ -453,6 +457,7 @@ export default function CustomerKiosk() {
       ice:      selIce,
       toppings: englishToppings,
       price:    itemPrice(customizing.price, selSize, selToppings),
+      quantity: selQuantity,
     }]);
     setCustomizing(null);
   }
@@ -583,6 +588,7 @@ export default function CustomerKiosk() {
         translatedToppings.includes(top) ? top : top
       ),
       price: item.price,
+      quantity: item.quantity,
     }));
 
     const res = await fetch('/api/orders', {
@@ -866,8 +872,13 @@ export default function CustomerKiosk() {
                     {item.toppings.length > 0 && <> · {item.toppings.map(translateTopping).join(', ')}</>}
                   </div>
                 </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button onClick={() => setCart(prev => prev.map((it, idx) => idx === i ? { ...it, quantity: Math.max(1, it.quantity - 1) } : it))} style={{ ...styles.removeBtn, fontSize: scale(14), padding: '2px 8px' }}>−</button>
+                  <span style={{ fontSize: scale(13), fontWeight: 700, minWidth: 16, textAlign: 'center' }}>{item.quantity}</span>
+                  <button onClick={() => setCart(prev => prev.map((it, idx) => idx === i ? { ...it, quantity: it.quantity + 1 } : it))} style={{ ...styles.removeBtn, fontSize: scale(14), padding: '2px 8px' }}>+</button>
+                </div>
                 <div style={styles.cartItemRight}>
-                  <span style={styles.cartItemPrice}>${item.price.toFixed(2)}</span>
+                  <span style={styles.cartItemPrice}>${(item.price * item.quantity).toFixed(2)}</span>
                   <button onClick={() => removeFromCart(i)} style={styles.removeBtn} tabIndex={0} onFocus={() => speakIfEnabled(`Remove ${item.name} from cart`)}>✕</button>
                 </div>
               </div>
@@ -993,8 +1004,13 @@ export default function CustomerKiosk() {
 
             <div style={styles.modalFooter}>
               <span style={{...styles.modalTotal, fontSize: scale(22)}}>
-                ${itemPrice(customizing.price, selSize, selToppings).toFixed(2)}
+                ${(itemPrice(customizing.price, selSize, selToppings) * selQuantity).toFixed(2)}
               </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button onClick={() => setSelQuantity(q => Math.max(1, q - 1))} style={{ ...styles.cancelBtn, fontSize: scale(18), padding: '4px 12px' }}>−</button>
+                <span style={{ fontSize: scale(16), fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{selQuantity}</span>
+                <button onClick={() => setSelQuantity(q => q + 1)} style={{ ...styles.addBtn, fontSize: scale(18), padding: '4px 12px' }}>+</button>
+              </div>
               <button onClick={() => setCustomizing(null)} tabIndex={0} onFocus={() => speakIfEnabled(`Cancel. Close customizaiton without adding item.`)} style={{...styles.cancelBtn, fontSize: scale(15)}}>{t('cancel')}</button>
               <button onClick={confirmCustomize} tabIndex={0} onFocus={() => speakIfEnabled(`Add to order. confirm and add this drink to your cart.`)} style={{...styles.addBtn, fontSize: scale(15)}}>{t('addToOrder')}</button>
             </div>
@@ -1132,13 +1148,13 @@ export default function CustomerKiosk() {
             <h2 style={{...styles.modalTitle, fontSize: scale(24)}}>{t('confirmOrder')}</h2>
             <div style={{ marginBottom: 20 }}>
               {cart.map((item, i) => (
-                <div key={i} style={{...styles.confirmRow, fontSize: scale(15)}} tabIndex={0} onFocus={() => speakIfEnabled(`${translateDrinkName(item.name)} ${t(item.size as any)}, price ${item.price} dollars`)}>
+                <div key={i} style={{...styles.confirmRow, fontSize: scale(15)}} tabIndex={0} onFocus={() => speakIfEnabled(`${translateDrinkName(item.name)} ${t(item.size as any)}, quantity ${item.quantity}, price ${(item.price * item.quantity).toFixed(2)} dollars`)}>
                   <span>
-                    {translateDrinkName(item.name)} ({t(item.size as any)})
+                    {translateDrinkName(item.name)} ({t(item.size as any)}){item.quantity > 1 ? ` ×${item.quantity}` : ''}
                   </span>
 
                   <span>
-                    ${item.price.toFixed(2)}
+                    ${(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))}
