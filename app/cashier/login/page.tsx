@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type CashierAuthSession = {
@@ -17,6 +17,7 @@ export default function CashierLoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastTapAt = useRef(0);
 
   const maskedPin = useMemo(() => pin.replace(/./g, "•"), [pin]);
 
@@ -38,6 +39,13 @@ export default function CashierLoginPage() {
     if (pin.length >= 10) return;
     setPin((prev) => prev + value);
     setError("");
+  }
+
+  function activate(action: () => void) {
+    const now = Date.now();
+    if (now - lastTapAt.current < 250) return;
+    lastTapAt.current = now;
+    action();
   }
 
   async function handleLogin() {
@@ -88,6 +96,7 @@ export default function CashierLoginPage() {
         background: "linear-gradient(130deg, #fff7ed 0%, #ffedd5 45%, #ffe4e6 100%)",
         fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
         padding: 16,
+        touchAction: "manipulation",
       }}
     >
       <div
@@ -135,8 +144,13 @@ export default function CashierLoginPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {keypadValues.map((value) => (
             <button
+              type="button"
               key={value}
-              onClick={() => onKeyPress(value)}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                activate(() => onKeyPress(value));
+              }}
+              onClick={() => activate(() => onKeyPress(value))}
               disabled={loading}
               style={{
                 minHeight: 78,
@@ -147,6 +161,9 @@ export default function CashierLoginPage() {
                 fontSize: value.length > 1 ? 22 : 32,
                 fontWeight: 700,
                 cursor: loading ? "not-allowed" : "pointer",
+                touchAction: "manipulation",
+                userSelect: "none",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
               {value === "Back" ? "⌫" : value}
@@ -155,7 +172,12 @@ export default function CashierLoginPage() {
         </div>
 
         <button
-          onClick={handleLogin}
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            activate(handleLogin);
+          }}
+          onClick={() => activate(handleLogin)}
           disabled={loading}
           style={{
             marginTop: 14,
@@ -168,13 +190,20 @@ export default function CashierLoginPage() {
             fontSize: 24,
             fontWeight: 800,
             cursor: loading ? "not-allowed" : "pointer",
+            touchAction: "manipulation",
+            WebkitTapHighlightColor: "transparent",
           }}
         >
           {loading ? "Signing In..." : "Sign In"}
         </button>
 
         <button
-          onClick={() => router.push("/")}
+          type="button"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            activate(() => router.push("/"));
+          }}
+          onClick={() => activate(() => router.push("/"))}
           disabled={loading}
           style={{
             marginTop: 10,
@@ -187,6 +216,8 @@ export default function CashierLoginPage() {
             fontSize: 18,
             fontWeight: 700,
             cursor: loading ? "not-allowed" : "pointer",
+            touchAction: "manipulation",
+            WebkitTapHighlightColor: "transparent",
           }}
         >
           Back to Portal

@@ -14,9 +14,35 @@ interface Employee {
   pin:        number;
 }
 
+interface PayrollRow {
+  employeeId: number;
+  name: string;
+  position: string;
+  hourlyPay: number;
+  hoursWorked: number;
+  completedShifts: number;
+  openShifts: number;
+  grossPay: number;
+}
+
+interface PayrollResponse {
+  from: string | null;
+  to: string | null;
+  rows: PayrollRow[];
+  totals: {
+    totalHours: number;
+    totalGrossPay: number;
+  };
+}
+
 export default function EmployeesView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading]     = useState(true);
+  const [payrollLoading, setPayrollLoading] = useState(false);
+  const [payrollError, setPayrollError] = useState('');
+  const [payrollData, setPayrollData] = useState<PayrollResponse | null>(null);
+  const [payrollFrom, setPayrollFrom] = useState('');
+  const [payrollTo, setPayrollTo] = useState('');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [hoveredId, setHoveredId]   = useState<number | null>(null);
   const [name,     setName]     = useState('');
@@ -32,7 +58,32 @@ export default function EmployeesView() {
     setLoading(false);
   }
 
-  useEffect(() => { refresh(); }, []);
+  async function refreshPayroll(from = payrollFrom, to = payrollTo) {
+    setPayrollLoading(true);
+    setPayrollError('');
+    try {
+      const params = new URLSearchParams();
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
+
+      const res = await fetch(`/manager/api/payroll?${params.toString()}`);
+      const json = await res.json();
+      if (!res.ok) {
+        setPayrollError(json.error || 'Failed to load payroll data.');
+        return;
+      }
+      setPayrollData(json);
+    } catch {
+      setPayrollError('Failed to load payroll data.');
+    } finally {
+      setPayrollLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+    refreshPayroll('', '');
+  }, []);
 
   function select(emp: Employee) {
     setSelectedId(emp.employeeid);
@@ -95,6 +146,9 @@ export default function EmployeesView() {
     borderRadius: 4, padding: '6px 14px', fontSize: 13, cursor: 'pointer',
   };
 
+  const money = (value: number) =>
+    value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   return (
     <div style={{ background: ACCENT, borderRadius: 8, padding: 20 }}>
       <h2 style={{ textAlign: 'center', margin: '0 0 10px', fontSize: 18, fontWeight: 'bold', color: '#000' }}>
@@ -155,6 +209,76 @@ export default function EmployeesView() {
         <button onClick={add}    disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Add</button>
         <button onClick={update} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Update Employee</button>
         <button onClick={remove} disabled={loading} style={{ ...btn, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Delete Employee</button>
+      </div>
+
+      <div style={{ marginTop: 22, background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 8, padding: 14 }}>
+        <h3 style={{ margin: 0, marginBottom: 10, color: '#111827' }}>Payroll Breakdown</h3>
+
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+          <label style={{ fontSize: 13 }}>From:</label>
+          <input
+            value={payrollFrom}
+            onChange={e => setPayrollFrom(e.target.value)}
+            placeholder='YYYY-MM-DD'
+            style={input(120)}
+          />
+          <label style={{ fontSize: 13 }}>To:</label>
+          <input
+            value={payrollTo}
+            onChange={e => setPayrollTo(e.target.value)}
+            placeholder='YYYY-MM-DD'
+            style={input(120)}
+          />
+          <button
+            onClick={() => refreshPayroll()}
+            disabled={payrollLoading}
+            style={{ ...btn, opacity: payrollLoading ? 0.5 : 1, cursor: payrollLoading ? 'not-allowed' : 'pointer' }}
+          >
+            Calculate Payroll
+          </button>
+        </div>
+
+        {payrollError && <div style={{ color: '#b91c1c', marginBottom: 10 }}>{payrollError}</div>}
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 760 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${BORDER}`, background: '#FAFAFA' }}>
+                {['ID', 'Name', 'Position', 'Hourly', 'Hours', 'Completed Shifts', 'Open Shifts', 'Gross Pay'].map(col => (
+                  <th key={col} style={{ textAlign: 'left', padding: '7px 8px', fontWeight: 'bold' }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {payrollLoading ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: 10, color: GRAY }}>Calculating payroll...</td>
+                </tr>
+              ) : (payrollData?.rows ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: 10, color: GRAY }}>No employees found.</td>
+                </tr>
+              ) : (
+                (payrollData?.rows ?? []).map(row => (
+                  <tr key={row.employeeId} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td style={{ padding: '7px 8px' }}>{row.employeeId}</td>
+                    <td style={{ padding: '7px 8px' }}>{row.name}</td>
+                    <td style={{ padding: '7px 8px' }}>{row.position}</td>
+                    <td style={{ padding: '7px 8px' }}>${money(row.hourlyPay)}</td>
+                    <td style={{ padding: '7px 8px' }}>{row.hoursWorked.toFixed(2)}</td>
+                    <td style={{ padding: '7px 8px' }}>{row.completedShifts}</td>
+                    <td style={{ padding: '7px 8px' }}>{row.openShifts}</td>
+                    <td style={{ padding: '7px 8px', fontWeight: 700 }}>${money(row.grossPay)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ marginTop: 10, fontWeight: 700, color: '#111827' }}>
+          Total Hours: {(payrollData?.totals.totalHours ?? 0).toFixed(2)} | Total Gross Payroll: ${money(payrollData?.totals.totalGrossPay ?? 0)}
+        </div>
       </div>
     </div>
   );
