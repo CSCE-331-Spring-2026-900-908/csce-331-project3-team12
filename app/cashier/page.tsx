@@ -222,6 +222,7 @@ export default function HomePage() {
                 borderRadius: 16,
                 border: "1px solid #d1d1d1",
                 background: "#7b3ff2",
+                color: "#fff",
                 cursor: "pointer",
                 display: "flex",
                 flexDirection: "column",
