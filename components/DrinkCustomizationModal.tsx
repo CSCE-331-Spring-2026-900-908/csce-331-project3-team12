@@ -20,9 +20,9 @@ interface DrinkCustomizationModalProps {
 }
 
 const SIZE_OPTIONS = [
-  { label: "Small ($4.67)", value: "Small", price: 4.67 },
+  { label: "Small (-$0.50)", value: "Small", price: 5.00 },
   { label: "Medium ($5.50)", value: "Medium", price: 5.50 },
-  { label: "Large ($6.32)", value: "Large", price: 6.32 },
+  { label: "Large (+$0.50)", value: "Large", price: 6.00 },
 ];
 
 const ICE_OPTIONS = ["No Ice", "Less Ice", "Regular", "Extra Ice"];
@@ -56,12 +56,12 @@ export default function DrinkCustomizationModal({
   onClose,
   onAddToCart,
 }: DrinkCustomizationModalProps) {
-  const [size, setSize] = useState("Small");
+  const [size, setSize] = useState("Medium");
   const [ice, setIce] = useState("Regular");
   const [sugar, setSugar] = useState("100%");
   const [toppings, setToppings] = useState<string[]>([]);
   const [availableToppings, setAvailableToppings] = useState<string[]>([]);
-  const [total, setTotal] = useState(4.67);
+  const [total, setTotal] = useState(5.50);
   const [quantity, setQuantity] = useState(1);
   const currentRecipe = recipeForSize(size);
 
@@ -85,7 +85,7 @@ export default function DrinkCustomizationModal({
   const toggleTopping = (topping: string) => {
     if (toppings.includes(topping)) {
       setToppings(toppings.filter((t) => t !== topping));
-    } else if (toppings.length < 2) {
+    } else {
       setToppings([...toppings, topping]);
     }
   };
@@ -165,16 +165,15 @@ export default function DrinkCustomizationModal({
 
         {/* Toppings */}
         <div className="mb-4">
-          <h3 className="font-semibold mb-2">Toppings (max 2)</h3>
+          <h3 className="font-semibold mb-2">Toppings</h3>
           <div className="flex gap-2 flex-wrap">
            {availableToppings.map((t, i) => (
   <button
     key={`${t}-${i}`}
                 onClick={() => toggleTopping(t)}
-                disabled={!toppings.includes(t) && toppings.length >= 2}
                 className={`px-4 py-2 rounded ${
                   toppings.includes(t) ? "bg-orange-400 text-white" : "bg-yellow-300"
-                } disabled:opacity-50`}
+                }`}
               >
                 {t}
               </button>
