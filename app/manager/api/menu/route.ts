@@ -1,7 +1,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 
 const pool = new Pool({
   user:     process.env.DB_USER,
@@ -12,7 +12,7 @@ const pool = new Pool({
   ssl:      { rejectUnauthorized: false },
 });
 
-async function hasColumn(client: Awaited<ReturnType<typeof pool.connect>>, table: string, column: string) {
+async function hasColumn(client: PoolClient, table: string, column: string) {
   const res = await client.query(
     `SELECT 1 FROM information_schema.columns WHERE table_name=$1 AND column_name=$2 LIMIT 1`,
     [table, column]
