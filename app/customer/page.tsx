@@ -42,9 +42,9 @@ const CATEGORIES = [
 ];
 
 const SIZES = [
-  { key: 'sizeSmall',  modifier: 0 },
-  { key: 'sizeMedium', modifier: 0.5 },
-  { key: 'sizeLarge',  modifier: 1.0 },
+  { key: 'sizeSmall',  modifier: -0.5 },
+  { key: 'sizeMedium', modifier: 0 },
+  { key: 'sizeLarge',  modifier: 0.5 },
 ];
 
 const SIZE_LABELS: Record<string, string> = {
@@ -804,6 +804,7 @@ export default function CustomerKiosk() {
           }}
           style={{
             padding: '8px 14px',
+            marginBottom: 12,
             borderRadius: 999,
             border: '1px solid #ddd6fe',
             background: '#f3f0ff',
@@ -847,9 +848,9 @@ export default function CustomerKiosk() {
 
         <div style={styles.grid}>
           {filteredMenu.map(item => (
-            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard} onFocus={()=> speakIfEnabled(`${item.name}. Price from ${item.price} dollars. Press to customize.`)} tabIndex={0}>
+            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard} onFocus={()=> speakIfEnabled(`${item.name}. Price ${item.price} dollars. Press to customize.`)} tabIndex={0}>
               <span style={{...styles.itemName, fontSize: scale(15)}}>{item.name}</span>
-              <span style={{...styles.itemPrice, fontSize: scale(14)}}>from ${item.price.toFixed(2)}</span>
+              <span style={{...styles.itemPrice, fontSize: scale(14)}}>$ {item.price.toFixed(2)}</span>
             </button>
           ))}
         </div>

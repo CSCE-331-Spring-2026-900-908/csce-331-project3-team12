@@ -20,9 +20,9 @@ interface DrinkCustomizationModalProps {
 }
 
 const SIZE_OPTIONS = [
-  { label: "Small ($4.67)", value: "Small", price: 4.67 },
+  { label: "Small (-$0.50)", value: "Small", price: 5.00 },
   { label: "Medium ($5.50)", value: "Medium", price: 5.50 },
-  { label: "Large ($6.32)", value: "Large", price: 6.32 },
+  { label: "Large (+$0.50)", value: "Large", price: 6.00 },
 ];
 
 const ICE_OPTIONS = ["No Ice", "Less Ice", "Regular", "Extra Ice"];
@@ -56,12 +56,12 @@ export default function DrinkCustomizationModal({
   onClose,
   onAddToCart,
 }: DrinkCustomizationModalProps) {
-  const [size, setSize] = useState("Small");
+  const [size, setSize] = useState("Medium");
   const [ice, setIce] = useState("Regular");
   const [sugar, setSugar] = useState("100%");
   const [toppings, setToppings] = useState<string[]>([]);
   const [availableToppings, setAvailableToppings] = useState<string[]>([]);
-  const [total, setTotal] = useState(4.67);
+  const [total, setTotal] = useState(5.50);
   const [quantity, setQuantity] = useState(1);
   const currentRecipe = recipeForSize(size);
 
