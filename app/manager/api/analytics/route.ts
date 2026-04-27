@@ -67,24 +67,16 @@ export async function GET(req: NextRequest) {
       [from, to]
     );
 
-    // Hourly sales (X-Report) — mirrors the Java query exactly
+    // Hourly sales (X-Report) — fixed for production
     const hourlyRes = await client.query(
-      `SELECT EXTRACT(HOUR FROM c.ordertime::time) AS hour,
-              COUNT(*) AS total_orders,
-              COALESCE(SUM(c.total), 0) AS revenue
-       FROM completed_orders c
-       JOIN business_day b
-         ON (CASE
-               WHEN c.orderdate LIKE '%/%' THEN to_date(c.orderdate, 'MM/DD/YYYY')
-               ELSE to_date(c.orderdate, 'YYYY-MM-DD')
-             END) = b.business_date
-       WHERE (CASE
-                WHEN c.orderdate LIKE '%/%' THEN to_date(c.orderdate, 'MM/DD/YYYY')
-                ELSE to_date(c.orderdate, 'YYYY-MM-DD')
-              END) BETWEEN $1 AND $2
-         AND b.status <> 'closed'
-       GROUP BY hour
-       ORDER BY hour`,
+      `SELECT 
+        EXTRACT(HOUR FROM ordertime::time) AS hour,
+        COUNT(*) AS total_orders,
+        COALESCE(SUM(total), 0) AS revenue
+      FROM completed_orders
+      WHERE orderdate::text BETWEEN $1 AND $2
+      GROUP BY hour
+      ORDER BY hour`,
       [from, to]
     );
 
