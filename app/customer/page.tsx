@@ -52,7 +52,7 @@ const SIZE_LABELS: Record<string, string> = {
   sizeLarge: 'Large',
 };
 
-const SUGAR_LEVELS = ['0%', '25%', '50%', '75%', '100%'];
+const SUGAR_LEVELS = ['0%', '25%', '50%', '75%', '100%', '125%'];
 const ICE_LEVELS = [
   { key: 'iceNoIce' },
   { key: 'iceLess' },
