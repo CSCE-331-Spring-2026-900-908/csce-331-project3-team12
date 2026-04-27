@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AnalyticsView from '../AnalyticsView';
 import EmployeesView from '../EmployeesView';
 import InventoryView from '../InventoryView';
@@ -18,6 +19,7 @@ const TABS: { key: Tab; label: string }[] = [
 ];
 
 export default function ManagerDashboardPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('analytics');
 
   return (
@@ -51,7 +53,7 @@ export default function ManagerDashboardPage() {
       </div>
 
       <div style={{ padding: '28px 40px 40px' }}>
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div
             style={{
               display: 'inline-grid',
@@ -83,6 +85,23 @@ export default function ManagerDashboardPage() {
               </button>
             ))}
           </div>
+
+          <button
+            onClick={() => router.push('/manager/menu')}
+            style={{
+              background: PURPLE,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 20px',
+              fontSize: 14,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              letterSpacing: '0.2px',
+            }}
+          >
+            Edit Menu →
+          </button>
         </div>
 
         {activeTab === 'analytics' && <AnalyticsView />}
