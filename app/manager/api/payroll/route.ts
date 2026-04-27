@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "../../../../lib/db";
+import pool from "../../../lib/db";
 
 async function ensureCashierSessionTable() {
   await pool.query(`
