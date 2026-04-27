@@ -67,6 +67,18 @@ const ICE_LEVELS = [
 const TOPPING_PRICE = 0.50;
 const TAX_RATE = 0.08;
 
+function BobaIcon({ size = 96 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64">
+      <rect x="26" y="2" width="4" height="20" fill="#444" />
+      <path d="M16 20 L48 20 L44 58 Q32 62 20 58 Z" fill="#d1b892" stroke="#8b6b4f" strokeWidth="2"/>
+      <circle cx="24" cy="48" r="3" fill="#3b2f2f"/>
+      <circle cx="32" cy="52" r="3" fill="#3b2f2f"/>
+      <circle cx="40" cy="48" r="3" fill="#3b2f2f"/>
+    </svg>
+  );
+}
+
 export default function CustomerKiosk() {
   const { lang, setLang, t } = useTranslation("en");
 
@@ -698,7 +710,9 @@ export default function CustomerKiosk() {
     return (
       <div style={styles.welcome} onClick={() => setView('menu')}>
         <div style={styles.welcomeInner}>
-          <div style={styles.welcomeEmoji}>🧋</div>
+          <div style={{ ...styles.welcomeEmoji, display: 'flex', justifyContent: 'center' }}>
+            <BobaIcon size={96} />
+          </div>
           <h1 style={styles.welcomeTitle}>{t('welcome')}</h1>
           <p style={styles.welcomeSub}>Fresh boba made to order</p>
           <div style={styles.tapPrompt}>{t('tapStart')}</div>
@@ -732,8 +746,9 @@ export default function CustomerKiosk() {
       <div style={styles.menuArea}>
         <div style={styles.menuHeader}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ ...styles.logo, fontSize: scale(28) }}>
-              🧋 Boba Shop
+            <span style={{ ...styles.logo, fontSize: scale(28), display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BobaIcon size={28} />
+              Boba Shop
             </span>
 
             {weather && (
