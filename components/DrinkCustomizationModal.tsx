@@ -3,6 +3,11 @@
 
 import { useState, useEffect } from "react";
 
+interface MenuItem {
+  name: string;
+  price: number; // medium price from DB
+}
+
 interface OrderItem {
   name: string;
   size: string;
@@ -14,16 +19,24 @@ interface OrderItem {
 }
 
 interface DrinkCustomizationModalProps {
-  flavor: string;
+  item: MenuItem;
   onClose: () => void;
   onAddToCart: (order: OrderItem) => void;
 }
 
 const SIZE_OPTIONS = [
-  { label: "Small (-$0.50)", value: "Small", price: 5.00 },
-  { label: "Medium ($5.50)", value: "Medium", price: 5.50 },
-  { label: "Large (+$0.50)", value: "Large", price: 6.00 },
+  { label: "Small (-$0.50)", value: "Small"},
+  { label: "Medium", value: "Medium"},
+  { label: "Large (+$0.50)", value: "Large"},
 ];
+
+const SIZE_MODIFIERS: Record<string, number> = {
+  Small: -0.5,
+  Medium: 0,
+  Large: 0.5,
+};
+
+const TOPPING_PRICE = 0.5;
 
 const ICE_OPTIONS = ["No Ice", "Less Ice", "Regular", "Extra Ice"];
 const SUGAR_OPTIONS = ["0%", "25%", "50%", "75%", "100%", "125%"];
@@ -52,7 +65,7 @@ function recipeForSize(size: string) {
 }
 
 export default function DrinkCustomizationModal({
-  flavor,
+  item,
   onClose,
   onAddToCart,
 }: DrinkCustomizationModalProps) {
@@ -61,7 +74,7 @@ export default function DrinkCustomizationModal({
   const [sugar, setSugar] = useState("100%");
   const [toppings, setToppings] = useState<string[]>([]);
   const [availableToppings, setAvailableToppings] = useState<string[]>([]);
-  const [total, setTotal] = useState(5.50);
+  const [total, setTotal] = useState(item.price);
   const [quantity, setQuantity] = useState(1);
   const currentRecipe = recipeForSize(size);
 
@@ -77,10 +90,13 @@ export default function DrinkCustomizationModal({
   }, []);
 
   useEffect(() => {
-    let price = SIZE_OPTIONS.find((s) => s.value === size)?.price || 4.67;
-    price += toppings.length * 0.5; // $0.50 per topping
+    const price =
+      item.price + // base (medium)
+      (SIZE_MODIFIERS[size] ?? 0) +
+      toppings.length * TOPPING_PRICE;
+
     setTotal(price);
-  }, [size, toppings]);
+  }, [size, toppings, item.price]);
 
   const toggleTopping = (topping: string) => {
     if (toppings.includes(topping)) {
@@ -92,7 +108,7 @@ export default function DrinkCustomizationModal({
 
   const handleAdd = () => {
     onAddToCart({
-      name: flavor,
+      name: item.name,
       size,
       sugar,
       ice,
@@ -107,7 +123,7 @@ export default function DrinkCustomizationModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-[90%] max-w-3xl max-h-[90%] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">Customize {flavor}</h2>
+        <h2 className="text-2xl font-bold mb-4">Customize {item.name}</h2>
 
         {/* Size */}
         <div className="mb-4">
@@ -165,7 +181,7 @@ export default function DrinkCustomizationModal({
 
         {/* Toppings */}
         <div className="mb-4">
-          <h3 className="font-semibold mb-2">Toppings</h3>
+          <h3 className="font-semibold mb-2">Toppings (+$0.50 each)</h3>
           <div className="flex gap-2 flex-wrap">
            {availableToppings.map((t, i) => (
   <button

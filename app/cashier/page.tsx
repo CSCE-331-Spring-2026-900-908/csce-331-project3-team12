@@ -28,14 +28,14 @@ interface CashierAuthSession {
 }
 
 // Categories
-const categories = ["Milk Tea", "Fruit Tea", "Matcha", "Slush"];
+const categories = ["All", "Milk Tea", "Fruit Tea", "Matcha", "Slush", "Seasonal"];
 
 export default function HomePage() {
   const router = useRouter();
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [orderList, setOrderList] = useState<OrderItem[]>([]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [selectedDrink, setSelectedDrink] = useState<string | null>(null); // for modal
+  const [selectedDrink, setSelectedDrink] = useState<MenuItem | null>(null); // for modal
   const [authSession, setAuthSession] = useState<CashierAuthSession | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -90,9 +90,20 @@ export default function HomePage() {
     router.push("/cashier/login");
   }
 
-  const filteredMenu = menu.filter((item) =>
-    item.name.toLowerCase().includes(activeCategory.toLowerCase().split(" ")[0])
-  );
+  const filteredMenu = menu.filter((item) => {
+    const name = item.name.toLowerCase();
+
+    if (activeCategory === "All") {
+      return true;
+    }
+
+
+    if (activeCategory === "Seasonal") {
+      return name.includes("seasonal");
+    }
+
+    return name.includes(activeCategory.toLowerCase().split(" ")[0]);
+  });
 
   function handleAddToOrder(order: OrderItem) {
     setOrderList((prev) => [...prev, order]);
@@ -101,7 +112,7 @@ export default function HomePage() {
   function removeFromOrder(index: number) {
     setOrderList((prev) => prev.filter((_, i) => i !== index));
   }
-  
+
   function increaseQty(index: number) {
     setOrderList(prev =>
       prev.map((item, i) =>
@@ -120,7 +131,7 @@ export default function HomePage() {
     );
   }
 
-  const subtotal = orderList.reduce((sum, item) => sum + (item.price*item.quantity), 0);
+  const subtotal = orderList.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
@@ -133,7 +144,7 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "Arial, sans-serif" }}>
       {/* Left: Menu */}
       <div style={{ flex: 1, padding: 20, background: "#f4f4f4" }}>
         <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
@@ -203,7 +214,7 @@ export default function HomePage() {
           {filteredMenu.map((item) => (
             <button
               key={item.name}
-              onClick={() => setSelectedDrink(item.name)} // open customization modal
+              onClick={() => setSelectedDrink(item)} // open customization modal
               style={{
                 height: 120,
                 padding: 10,
@@ -321,7 +332,7 @@ export default function HomePage() {
       {/* Drink Customization Modal */}
       {selectedDrink && (
         <DrinkCustomizationModal
-          flavor={selectedDrink}
+          item={selectedDrink}
           onClose={() => setSelectedDrink(null)}
           onAddToCart={handleAddToOrder}
         />
