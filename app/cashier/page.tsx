@@ -10,34 +10,85 @@ interface MenuItem {
   price: number;
 }
 
+interface OrderItem {
+  name: string;
+  size: string;
+  sugar: string;
+  ice: string;
+  toppings: string[];
+  price: number;
+  quantity: number;
+}
+
+interface CashierAuthSession {
+  sessionId: number;
+  employeeId: number;
+  name: string;
+  loginTime: string;
+}
+
 // Categories
 const categories = ["Milk Tea", "Fruit Tea", "Matcha", "Slush"];
 
 export default function HomePage() {
   const router = useRouter();
   const [menu, setMenu] = useState<MenuItem[]>([]);
-  interface OrderItem {
-    name: string;
-    size: string;
-    sugar: string;
-    ice: string;
-    toppings: string[];
-    price: number;
-    quantity: number;
-  }
-  const [orderList, setOrderList] = useState<OrderItem[]>([]); 
+  const [orderList, setOrderList] = useState<OrderItem[]>([]);
   const [activeCategory, setActiveCategory] = useState(categories[0]);
   const [selectedDrink, setSelectedDrink] = useState<string | null>(null); // for modal
+  const [authSession, setAuthSession] = useState<CashierAuthSession | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("cashierAuth");
+    if (!raw) {
+      router.replace("/cashier/login");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as CashierAuthSession;
+      if (!parsed.sessionId || !parsed.employeeId) {
+        localStorage.removeItem("cashierAuth");
+        router.replace("/cashier/login");
+        return;
+      }
+      setAuthSession(parsed);
+      setAuthChecked(true);
+    } catch {
+      localStorage.removeItem("cashierAuth");
+      router.replace("/cashier/login");
+    }
+  }, [router]);
 
   // Fetch menu from API
   useEffect(() => {
+    if (!authChecked) return;
+
     async function fetchMenu() {
       const res = await fetch("/api/menu");
       const data: MenuItem[] = await res.json();
       setMenu(data);
     }
     fetchMenu();
-  }, []);
+  }, [authChecked]);
+
+  async function handleLogout() {
+    if (authSession?.sessionId) {
+      try {
+        await fetch("/api/cashier-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "logout", sessionId: authSession.sessionId }),
+        });
+      } catch {
+        // Ignore network failures here and still clear local auth.
+      }
+    }
+
+    localStorage.removeItem("cashierAuth");
+    router.push("/cashier/login");
+  }
 
   const filteredMenu = menu.filter((item) =>
     item.name.toLowerCase().includes(activeCategory.toLowerCase().split(" ")[0])
@@ -73,10 +124,45 @@ export default function HomePage() {
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
+  if (!authChecked || !authSession) {
+    return (
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", fontFamily: "Arial, sans-serif" }}>
+        <div style={{ color: "#4b5563", fontSize: 18, fontWeight: 600 }}>Loading cashier session...</div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
       {/* Left: Menu */}
       <div style={{ flex: 1, padding: 20, background: "#f4f4f4" }}>
+        <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ color: "#374151", fontWeight: 600 }}>
+            Cashier: {authSession.name} (ID {authSession.employeeId})
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+              Login: {new Date(authSession.loginTime).toLocaleString()}
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              minHeight: 48,
+              minWidth: 140,
+              padding: "8px 14px",
+              borderRadius: 10,
+              border: "none",
+              background: "#dc2626",
+              color: "#ffffff",
+              cursor: "pointer",
+              fontWeight: 700,
+              fontSize: 18,
+            }}
+          >
+            Logout
+          </button>
+        </div>
+
         <div style={{ marginBottom: 16 }}>
           <button
             onClick={() => router.push("/")}
@@ -183,9 +269,9 @@ export default function HomePage() {
                 )}
               </div>
               <div style={{ display: "flex", gap: 5 }}>
-                <button onClick={() => decreaseQty(i)}>➖</button>
-                <button onClick={() => increaseQty(i)}>➕</button>
-                <button onClick={() => removeFromOrder(i)}>❌</button>
+                <button onClick={() => decreaseQty(i)} style={{ minWidth: 42, minHeight: 42, fontSize: 18 }}>➖</button>
+                <button onClick={() => increaseQty(i)} style={{ minWidth: 42, minHeight: 42, fontSize: 18 }}>➕</button>
+                <button onClick={() => removeFromOrder(i)} style={{ minWidth: 42, minHeight: 42, fontSize: 18 }}>❌</button>
               </div>
             </div>
           ))}
@@ -199,35 +285,37 @@ export default function HomePage() {
         </div>
 
         <button
-  onClick={async () => {
-    if (orderList.length === 0) return alert("No items in order.");
-    try {
-      const res = await fetch("/api/submitOrder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderList }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      alert(`Order submitted! Order ID: ${data.orderID}, Total: $${data.total.toFixed(2)}`);
-      setOrderList([]);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to submit order: " + err);
-    }
-  }}
-  style={{
-    padding: 12,
-    background: "#7b3ff2",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 16,
-    cursor: "pointer",
-  }}
->
-  Complete Order
-</button>
+          onClick={async () => {
+            if (orderList.length === 0) return alert("No items in order.");
+            try {
+              const res = await fetch("/api/submitOrder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderList }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+              const data = await res.json();
+              alert(`Order submitted! Order ID: ${data.orderID}, Total: $${data.total.toFixed(2)}`);
+              setOrderList([]);
+            } catch (err) {
+              console.error(err);
+              alert("Failed to submit order: " + err);
+            }
+          }}
+          style={{
+            minHeight: 56,
+            padding: 12,
+            background: "#7b3ff2",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            fontSize: 22,
+            cursor: "pointer",
+            fontWeight: 700,
+          }}
+        >
+          Complete Order
+        </button>
       </div>
 
       {/* Drink Customization Modal */}
