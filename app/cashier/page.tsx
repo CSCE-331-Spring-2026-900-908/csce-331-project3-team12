@@ -198,7 +198,8 @@ export default function HomePage() {
               onClick={() => setActiveCategory(cat)}
               style={{
                 padding: "10px 20px",
-                background: activeCategory === cat ? "#fde067" : "#d1d1d1",
+                background: activeCategory === cat ? "#7b3ff2" : "#ebe6f8",
+                color: activeCategory === cat ? "#fff" : "#7b3ff2",
                 border: "none",
                 borderRadius: 8,
                 cursor: "pointer",
@@ -220,7 +221,7 @@ export default function HomePage() {
                 padding: 10,
                 borderRadius: 16,
                 border: "1px solid #d1d1d1",
-                background: "#fde067",
+                background: "#7b3ff2",
                 cursor: "pointer",
                 display: "flex",
                 flexDirection: "column",
@@ -241,7 +242,8 @@ export default function HomePage() {
         style={{
           width: 320,
           padding: 20,
-          background: "#fde067",
+          background: "#fff",
+          color: "#000",
           display: "flex",
           flexDirection: "column",
         }}
@@ -255,7 +257,7 @@ export default function HomePage() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                background: "#fff",
+                background: "#e8e6e6",
                 padding: 8,
                 borderRadius: 8,
                 marginBottom: 8,

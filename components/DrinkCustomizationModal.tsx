@@ -121,12 +121,12 @@ export default function DrinkCustomizationModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 text-black">
       <div className="bg-white rounded-lg p-6 w-[90%] max-w-3xl max-h-[90%] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4">Customize {item.name}</h2>
 
         {/* Size */}
-        <div className="mb-4">
+        <div className="mb-4 text-black">
           <h3 className="font-semibold mb-2">Size</h3>
           <div className="flex gap-2">
             {SIZE_OPTIONS.map((s) => (
@@ -134,7 +134,7 @@ export default function DrinkCustomizationModal({
                 key={s.value}
                 onClick={() => setSize(s.value)}
                 className={`px-4 py-2 rounded ${
-                  size === s.value ? "bg-orange-400 text-white" : "bg-yellow-300"
+                  size === s.value ? "bg-[#7b3ff2] text-white" : "bg-purple-100"
                 }`}
               >
                 {s.label}
@@ -144,7 +144,7 @@ export default function DrinkCustomizationModal({
         </div>
 
         {/* Ice */}
-        <div className="mb-4">
+        <div className="mb-4 text-black">
           <h3 className="font-semibold mb-2">Ice</h3>
           <div className="flex gap-2 flex-wrap">
             {ICE_OPTIONS.map((i) => (
@@ -152,7 +152,7 @@ export default function DrinkCustomizationModal({
                 key={i}
                 onClick={() => setIce(i)}
                 className={`px-4 py-2 rounded ${
-                  ice === i ? "bg-orange-400 text-white" : "bg-yellow-300"
+                  ice === i ? "bg-[#7b3ff2] text-white" : "bg-purple-100"
                 }`}
               >
                 {i}
@@ -162,7 +162,7 @@ export default function DrinkCustomizationModal({
         </div>
 
         {/* Sugar */}
-        <div className="mb-4">
+        <div className="mb-4 text-black">
           <h3 className="font-semibold mb-2">Sugar</h3>
           <div className="flex gap-2 flex-wrap">
             {SUGAR_OPTIONS.map((s) => (
@@ -170,7 +170,7 @@ export default function DrinkCustomizationModal({
                 key={s}
                 onClick={() => setSugar(s)}
                 className={`px-4 py-2 rounded ${
-                  sugar === s ? "bg-orange-400 text-white" : "bg-yellow-300"
+                  sugar === s ? "bg-[#7b3ff2] text-white" : "bg-purple-100"
                 }`}
               >
                 {s}
@@ -188,7 +188,7 @@ export default function DrinkCustomizationModal({
     key={`${t}-${i}`}
                 onClick={() => toggleTopping(t)}
                 className={`px-4 py-2 rounded ${
-                  toppings.includes(t) ? "bg-orange-400 text-white" : "bg-yellow-300"
+                  toppings.includes(t) ? "bg-[#7b3ff2] text-white" : "bg-purple-100"
                 }`}
               >
                 {t}
@@ -221,7 +221,7 @@ export default function DrinkCustomizationModal({
           </button>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 rounded bg-orange-400 text-white"
+            className="px-4 py-2 rounded bg-[#7b3ff2] text-white"
           >
             Add to Cart
           </button>
