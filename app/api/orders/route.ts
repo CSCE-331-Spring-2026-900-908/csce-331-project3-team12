@@ -39,11 +39,17 @@ export async function POST(request: Request) {
 
 
 
-    const detail = items
-      .map(item =>
-        [item.name, item.size, item.sugar, item.ice, ...item.toppings].join(', ')
-      )
-      .join(' | ');
+    const normalized = items.map(item => ({
+      ...item,
+      quantity: typeof (item as any).quantity === "number" && (item as any).quantity > 0
+        ? (item as any).quantity
+        : 1,
+      toppings: Array.isArray(item.toppings) ? item.toppings : [],
+    }));
+
+    const detail = normalized.map(item =>
+      `${item.name}, ${item.size}, ${item.sugar}, ${item.ice}, ${item.toppings.join(", ")} x${item.quantity}`
+    ).join(' | ');
 
     await client.query(
       `INSERT INTO in_progress_orders (total, orderid, orderdetail, employeeid, employeetip, orderdate, ordertime)
@@ -52,11 +58,11 @@ export async function POST(request: Request) {
     );
 
     const usage = computeInventoryUsage(
-      items.map(item => ({
+      normalized.map(item => ({
         name: item.name,
         size: item.size,
         toppings: item.toppings,
-        quantity: 1,
+        quantity: item.quantity, // real quantity
       }))
     );
 
