@@ -93,6 +93,14 @@ export default function CustomerKiosk() {
   const [selToppings, setSelToppings]       = useState<string[]>([]);
   const [finalOrder, setFinalOrder] = useState<CustomizedItem[]>([]);
 
+  const [chatOpen, setChatOpen]         = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
+    { role: 'assistant', text: "Hi! I'm your boba assistant 🧋 Ask me anything about our menu or help building your order!" },
+  ]);
+  const [chatInput, setChatInput]       = useState('');
+  const [chatLoading, setChatLoading]   = useState(false);
+  const [chatBubbleHovered, setChatBubbleHovered] = useState(false);
+  const chatEndRef                      = useRef<HTMLDivElement>(null);
   const [waitTime, setWaitTime]                     = useState<number | null>(null);
   const [availableToppings, setAvailableToppings]   = useState<string[]>([]);
   const [translatedToppings, setTranslatedToppings] = useState<string[]>([]);
@@ -350,6 +358,10 @@ export default function CustomerKiosk() {
       )} dollars. Review your order or go back to edit.`
     );
   }, [view, screenReader, cart.length, total]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const filteredMenu = (() => {
     const englishCategory =
@@ -617,6 +629,57 @@ export default function CustomerKiosk() {
       setView('receipt');
     } else {
       alert('Something went wrong. Please try again.');
+    }
+  }
+
+  async function sendMessage() {
+    const text = chatInput.trim();
+    if (!text || chatLoading) return;
+
+    const userMsg = { role: 'user' as const, text };
+    const updated = [...chatMessages, userMsg];
+    setChatMessages(updated);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updated.map(m => ({ role: m.role, content: m.text })),
+          menu,
+          toppings: availableToppings,
+        }),
+      });
+      const data = await res.json();
+
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        text: data.reply ?? 'Sorry, something went wrong.',
+      }]);
+
+      if (data.action?.type === 'add_to_cart') {
+        const { name, size, sugar, ice, toppings: itemToppings = [] } = data.action.item;
+        const baseItem = menu.find((m: MenuItem) => m.name === name);
+        if (baseItem) {
+          setCart(prev => [...prev, {
+            name,
+            size,
+            sugar,
+            ice,
+            toppings: itemToppings,
+            price: itemPrice(baseItem.price, size, itemToppings),
+          }]);
+        }
+      }
+    } catch {
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        text: 'Sorry, I had trouble connecting. Please try again.',
+      }]);
+    } finally {
+      setChatLoading(false);
     }
   }
 
@@ -1153,6 +1216,170 @@ export default function CustomerKiosk() {
           </div>
         </div>
       )}
+
+      {/* ── Floating Chat Bubble ──────────────────────────────────────────────── */}
+      {!customizing && view !== 'confirm' && (
+        <>
+          {chatOpen && (
+            <div style={{
+              position: 'fixed',
+              bottom: 108,
+              left: 28,
+              width: 360,
+              height: 480,
+              background: '#fff',
+              borderRadius: 24,
+              boxShadow: '0 8px 48px rgba(124,58,237,0.22)',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 150,
+              border: '1px solid #ede9fe',
+              overflow: 'hidden',
+            }}>
+              {/* Chat header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}>
+                <span style={{ fontSize: 26 }}>🧋</span>
+                <div>
+                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>Boba Assistant</div>
+                  <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>Here to help!</div>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                background: '#faf7ff',
+              }}>
+                {chatMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  }}>
+                    <div style={{
+                      maxWidth: '82%',
+                      padding: '10px 14px',
+                      borderRadius: msg.role === 'user'
+                        ? '18px 18px 4px 18px'
+                        : '4px 18px 18px 18px',
+                      background: msg.role === 'user' ? '#7c3aed' : '#fff',
+                      color: msg.role === 'user' ? '#fff' : '#1f2937',
+                      fontSize: 14,
+                      lineHeight: 1.55,
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                    }}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                    <div style={{
+                      padding: '10px 16px',
+                      borderRadius: '4px 18px 18px 18px',
+                      background: '#fff',
+                      fontSize: 18,
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                      letterSpacing: 2,
+                    }}>
+                      •••
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input row */}
+              <div style={{
+                padding: '12px 14px',
+                borderTop: '1px solid #ede9fe',
+                display: 'flex',
+                gap: 8,
+                background: '#fff',
+              }}>
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+                  placeholder="Ask about our menu…"
+                  disabled={chatLoading}
+                  style={{
+                    flex: 1,
+                    border: '1.5px solid #ddd6fe',
+                    borderRadius: 12,
+                    padding: '10px 14px',
+                    fontSize: 14,
+                    outline: 'none',
+                    background: '#faf7ff',
+                    color: '#1f2937',
+                  }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!chatInput.trim()}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 12,
+                    background: chatInput.trim() ? '#7c3aed' : '#ede9fe',
+                    border: 'none',
+                    cursor: chatInput.trim() ? 'pointer' : 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 20,
+                    color: chatInput.trim() ? '#fff' : '#a78bfa',
+                    flexShrink: 0,
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  ↑
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Toggle button */}
+          <button
+            onClick={() => setChatOpen(prev => !prev)}
+            onMouseEnter={() => setChatBubbleHovered(true)}
+            onMouseLeave={() => setChatBubbleHovered(false)}
+            style={{
+              position: 'fixed',
+              bottom: 28,
+              left: 28,
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: chatOpen ? '#4c1d95' : '#7c3aed',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 24px rgba(124,58,237,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: chatOpen ? 22 : 26,
+              zIndex: 151,
+              color: '#fff',
+              opacity: chatOpen || chatBubbleHovered ? 1 : 0.5,
+              transition: 'opacity 0.2s, background 0.2s',
+            }}
+          >
+            {chatOpen ? '✕' : '💬'}
+          </button>
+        </>
+      )}
+
     </div>
   );
 }
