@@ -28,6 +28,29 @@ const SIZE_OPTIONS = [
 const ICE_OPTIONS = ["No Ice", "Less Ice", "Regular", "Extra Ice"];
 const SUGAR_OPTIONS = ["0%", "25%", "50%", "75%", "100%", "125%"];
 
+const BASE_RECIPE_ML = {
+  teaBase: 120,
+  milkOrFruitMix: 80,
+  sweetener: 20,
+  ice: 120,
+};
+
+const SIZE_RECIPE_MULTIPLIER: Record<string, number> = {
+  Small: 0.85,
+  Medium: 1,
+  Large: 1.2,
+};
+
+function recipeForSize(size: string) {
+  const factor = SIZE_RECIPE_MULTIPLIER[size] ?? 1;
+  return {
+    teaBase: Math.round(BASE_RECIPE_ML.teaBase * factor),
+    milkOrFruitMix: Math.round(BASE_RECIPE_ML.milkOrFruitMix * factor),
+    sweetener: Math.round(BASE_RECIPE_ML.sweetener * factor),
+    ice: Math.round(BASE_RECIPE_ML.ice * factor),
+  };
+}
+
 export default function DrinkCustomizationModal({
   flavor,
   onClose,
@@ -40,6 +63,7 @@ export default function DrinkCustomizationModal({
   const [availableToppings, setAvailableToppings] = useState<string[]>([]);
   const [total, setTotal] = useState(4.67);
   const [quantity, setQuantity] = useState(1);
+  const currentRecipe = recipeForSize(size);
 
   useEffect(() => {
     // fetch toppings from API
@@ -160,6 +184,17 @@ export default function DrinkCustomizationModal({
 
         {/* Total */}
         <div className="mb-4 font-bold text-xl">Total: ${total.toFixed(2)}</div>
+
+        {/* Recipe guidance by selected cup size */}
+        <div className="mb-5 rounded-md border border-purple-200 bg-purple-50 p-4">
+          <h3 className="mb-2 font-semibold text-purple-900">Recipe for {size} cup</h3>
+          <div className="grid gap-1 text-sm text-purple-800">
+            <div>Tea base: {currentRecipe.teaBase} ml</div>
+            <div>Milk/Fruit mix: {currentRecipe.milkOrFruitMix} ml</div>
+            <div>Sweetener: {currentRecipe.sweetener} ml</div>
+            <div>Ice: {currentRecipe.ice} ml</div>
+          </div>
+        </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-4">

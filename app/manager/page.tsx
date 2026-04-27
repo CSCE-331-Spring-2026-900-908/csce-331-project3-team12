@@ -1,111 +1,71 @@
 'use client';
 
-import { useState } from 'react';
-import AnalyticsView from './AnalyticsView';
-import EmployeesView from './EmployeesView';
-import InventoryView from './InventoryView';
+import { useRouter } from 'next/navigation';
+import type { CSSProperties } from 'react';
 
-type Tab = 'analytics' | 'inventory' | 'employees';
-
-const PURPLE   = '#7B3FF2';
-const PURPLE_L = '#9A66F5';
-const PURPLE_XL = '#EDE9FE';
-
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'analytics', label: 'Analytics' },
-  { key: 'inventory', label: 'Inventory' },
-  { key: 'employees', label: 'Employees' },
-];
+const CARD_STYLE: CSSProperties = {
+  background: '#ffffff',
+  border: '1px solid #e9d5ff',
+  borderRadius: 16,
+  padding: '20px 18px',
+  width: 260,
+  cursor: 'pointer',
+  textAlign: 'left',
+  boxShadow: '0 8px 30px rgba(76, 29, 149, 0.08)',
+};
 
 export default function ManagerPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('analytics');
+  const router = useRouter();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3FF', fontFamily: 'sans-serif' }}>
-
-      {/* Top bar */}
-      <div style={{
-        background: PURPLE,
-        padding: '16px 40px',
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(140deg, #ede9fe 0%, #f5f3ff 45%, #faf5ff 100%)',
+        fontFamily: 'sans-serif',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 'bold', color: '#fff', letterSpacing: '0.3px' }}>
-          Manager Dashboard
-        </h1>
-        <button
-          onClick={() => (window.location.href = '/')}
-          style={{
-            background: 'rgba(255,255,255,0.15)',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: 8,
-            padding: '6px 16px',
-            fontSize: 14,
-            cursor: 'pointer',
-          }}
-        >
-          Back
-        </button>
-      </div>
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: 760, textAlign: 'center' }}>
+        <h1 style={{ margin: 0, fontSize: 34, color: '#4c1d95', fontWeight: 800 }}>Manager View</h1>
+        <p style={{ marginTop: 10, color: '#6b7280', fontSize: 16 }}>
+          Choose where to navigate for this shift.
+        </p>
 
-      <div style={{ padding: '28px 40px 40px' }}>
+        <div style={{ marginTop: 28, display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <button onClick={() => router.push('/manager/dashboard')} style={CARD_STYLE}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#4c1d95' }}>Manager Dashboard</div>
+            <div style={{ marginTop: 8, fontSize: 14, color: '#6b7280' }}>
+              Open analytics, inventory, and employee tools.
+            </div>
+          </button>
 
-        {/* Nav pills + Edit Menu button */}
-        <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{
-            display: 'inline-grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 4,
-            background: PURPLE_XL,
-            borderRadius: 18,
-            padding: 4,
-            width: 380,
-            height: 44,
-          }}>
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                style={{
-                  background: activeTab === tab.key ? PURPLE : 'transparent',
-                  border: 'none',
-                  borderRadius: 14,
-                  fontWeight: 'bold',
-                  fontSize: 13,
-                  color: activeTab === tab.key ? '#fff' : PURPLE_L,
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => (window.location.href = '/manager/menu')}
-            style={{
-              background: PURPLE,
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 20px',
-              fontSize: 14,
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              letterSpacing: '0.2px',
-            }}
-          >
-            Edit Menu →
+          <button onClick={() => router.push('/cashier')} style={CARD_STYLE}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#4c1d95' }}>Cashier View</div>
+            <div style={{ marginTop: 8, fontSize: 14, color: '#6b7280' }}>
+              Jump directly into order taking and checkout.
+            </div>
           </button>
         </div>
 
-        {/* Tab content */}
-        {activeTab === 'analytics' && <AnalyticsView />}
-        {activeTab === 'inventory' && <InventoryView />}
-        {activeTab === 'employees' && <EmployeesView />}
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            marginTop: 28,
+            padding: '10px 18px',
+            borderRadius: 10,
+            border: '1px solid #d8b4fe',
+            background: '#ffffff',
+            color: '#6d28d9',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          Back to Portal
+        </button>
       </div>
     </div>
   );

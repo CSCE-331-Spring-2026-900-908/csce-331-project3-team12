@@ -1,6 +1,7 @@
 export const runtime = 'nodejs';
 
 import pool from '@/app/lib/db';
+import { computeInventoryUsage } from '@/app/lib/inventoryUsage';
 
 interface OrderItem {
   name: string;
@@ -49,6 +50,24 @@ export async function POST(request: Request) {
       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [total, orderId, detail, null, null, orderdate, ordertime]
     );
+
+    const usage = computeInventoryUsage(
+      items.map(item => ({
+        name: item.name,
+        size: item.size,
+        toppings: item.toppings,
+        quantity: 1,
+      }))
+    );
+
+    for (const [ingredient, amount] of Object.entries(usage)) {
+      await client.query(
+        `UPDATE inventory
+         SET quantity = GREATEST(quantity - $1, 0)
+         WHERE ingredientname = $2`,
+        [amount, ingredient]
+      );
+    }
 
     await client.query('COMMIT');
 
