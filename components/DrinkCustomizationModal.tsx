@@ -38,7 +38,7 @@ const SIZE_MODIFIERS: Record<string, number> = {
 
 const TOPPING_PRICE = 0.5;
 
-const ICE_OPTIONS = ["No Ice", "Less Ice", "Regular", "Extra Ice"];
+const ICE_OPTIONS = ["Hot", "No Ice", "Less Ice", "Regular", "Extra Ice"];
 const SUGAR_OPTIONS = ["0%", "25%", "50%", "75%", "100%", "125%"];
 
 const BASE_RECIPE_ML = {
@@ -207,7 +207,11 @@ export default function DrinkCustomizationModal({
             <div>Tea base: {currentRecipe.teaBase} ml</div>
             <div>Milk/Fruit mix: {currentRecipe.milkOrFruitMix} ml</div>
             <div>Sweetener: {currentRecipe.sweetener} ml</div>
-            <div>Ice: {currentRecipe.ice} ml</div>
+            {ice === "Hot" ? (
+                <div>No ice (served hot)</div>
+              ) : (
+                <div>Ice: {currentRecipe.ice} ml</div>
+              )}
           </div>
         </div>
 
