@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from "@/lib/useTranslation";
 import { Lang } from "@/lib/translations";
+import { getBobaImageSrc } from '@/lib/bobaImages';
 import { useRef } from 'react';
 
 type View = 'welcome' | 'menu' | 'confirm' | 'receipt';
@@ -10,6 +11,7 @@ type View = 'welcome' | 'menu' | 'confirm' | 'receipt';
 interface MenuItem {
   name: string;
   price: number;
+  image?: string;
 }
 
 interface CustomizedItem {
@@ -930,7 +932,15 @@ export default function CustomerKiosk() {
 
         <div style={styles.grid}>
           {filteredMenu.map(item => (
-            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard} onFocus={()=> speakIfEnabled(`${item.name}. Price ${item.price} dollars. Press to customize.`)} tabIndex={0}>
+            <button key={item.name} onClick={() => openCustomize(item)} style={styles.itemCard}
+              onFocus={() => speakIfEnabled(`${item.name}. Price ${item.price} dollars. Press to customize.`)}
+              tabIndex={0}>
+
+              <img
+                src={getBobaImageSrc(menu.find(m => m.name === item.name)?.name ?? item.name)}
+                alt={item.name}
+                style={{ width: 80, height: 100, display: 'block' }}
+              />
               <span style={{...styles.itemName, fontSize: scale(15)}}>{item.name}</span>
               <span style={{...styles.itemPrice, fontSize: scale(14)}}>$ {item.price.toFixed(2)}</span>
             </button>
